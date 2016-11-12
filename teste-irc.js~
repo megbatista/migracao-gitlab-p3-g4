@@ -1,0 +1,20 @@
+var irc = require('irc');
+
+var servidor = 'irc.freenode.net';
+var nick = 'marceloakira2';
+var canal = '#sd1-ec-2016-2';
+
+var client = new irc.Client( 	servidor,
+				nick,
+				{ channels: [ canal ],}
+);
+
+client.say( canal , 'teste da biblioteca irc' );
+
+client.addListener('message'+canal, function (from, message) {
+    console.log(from + ' => '+canal+': ' + message);
+});
+
+client.addListener('error', function(message) {
+    console.log('error: ', message);
+});
