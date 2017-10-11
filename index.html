@@ -3,6 +3,29 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 	<script src="js/functions.js" type="text/javascript"></script>
 	<script src="js/js.cookie.js" type="text/javascript"></script>
+        <script src="/socket.io/socket.io.js"></script>
+    <script>
+        $(function(){
+            var iosocket = io.connect();
+            iosocket.on('connect', function () {
+                $('#mural').append($('Connected'));
+                iosocket.on('message', function(message) {
+                    $('#mural').append(message);
+                });
+                iosocket.on('disconnect', function() {
+                    $('#mural').append('Disconnected');
+                });
+            });
+            $('#mensagem').keypress(function(event) {
+                if(event.which == 13) {
+                    event.preventDefault();
+                    iosocket.send($('#mensagem').val());
+                    $('#mural').append($('#mensagem').val());
+                    $('#mensagem').val('');
+                }
+            });
+        });
+    </script>
 	<title>bate-papo ajax</title>
 </head>
 <body onload="iniciar('mural')">
@@ -15,6 +38,5 @@ Mensagem: <input type="text" size="30" id="mensagem">
   <option value="+i">+i</option>
   <option value="-i">-i</option>
 </select> 
-
 </body>
 </html>
