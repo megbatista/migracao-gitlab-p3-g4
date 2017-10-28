@@ -27,7 +27,7 @@ function iniciar(elemento_id) {
 			Cookies.get("nick")+"@"+
 			Cookies.get("servidor")+"/"+
 			Cookies.get("canal"));
-	carrega_mensagens(elemento_id,0);
+	// carrega_mensagens(elemento_id,0);
 }
 
 /*
@@ -35,6 +35,7 @@ function iniciar(elemento_id) {
   acrescentando-as no <elemento_id>
 */
 var novo_timestamp="0";
+/*
 function carrega_mensagens(elemento_id, timestamp) {
 	var mensagem = "";
 	var horario = "";
@@ -62,6 +63,7 @@ function carrega_mensagens(elemento_id, timestamp) {
 		}, 
 		1000);		
 }
+*/
 
 /*
    Submete a mensagem dos valores contidos s elementos identificados 

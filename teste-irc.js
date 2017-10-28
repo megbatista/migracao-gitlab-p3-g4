@@ -5,8 +5,7 @@ var nick = 'testes';
 var canal = '#sd1-ec-2016-2';
 var dentro_do_canal = false;
 
-var client = new irc.Client( 	servidor,
-				nick,
+var client = new irc.Client( servidor, nick,
 				{ channels: [ canal ],}
 );
 

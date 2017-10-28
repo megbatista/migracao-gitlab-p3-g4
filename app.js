@@ -1,92 +1,110 @@
 var express = require('express');  // módulo express
 var app = express();		   // objeto express
+var server = require('http').Server(app); // coloca o express dentro do servidor http
+var io = require('socket.io')(server);//coloca o servidor dentro do socketio
 var bodyParser = require('body-parser');  // processa corpo de requests
 var cookieParser = require('cookie-parser');  // processa cookies
-var irc = require('irc');
+var irc = require('irc');// api para conectarmos com um servidor irc
+var socketio_cookieParser = require('socket.io-cookie'); //processa cookies do socketio
+var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
+//comandos
+var executarComandoNick = require('./comandos/nick');
+
+io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
+//configuranco dos middlewares do express
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded( { extended: true } ));
 app.use(cookieParser());
 app.use(express.static('public'));
 
-var path = require('path');	// módulo usado para lidar com caminhos de arquivos
+
 
 var proxies = {}; // mapa de proxys
+var nicks=[];
+var servidores=[];
+var canais=[];
 var proxy_id = 0;
+var irc_client;
 
-function proxy(id, servidor, nick, canal) {
-	var cache = []; // cache de mensagens
-
-	var irc_client = new irc.Client(
-			servidor, 
-			nick,
-			{channels: [canal],});
-
-	irc_client.addListener('message'+canal, function (from, message) {
-	    console.log(from + ' => '+ canal +': ' + message);
-	    cache.push(	{"timestamp":Date.now(), 
-			"nick":from,
-			"msg":message} );
-	});
-	irc_client.addListener('error', function(message) {
-	    console.log('error: ', message);
-	});
-	irc_client.addListener('mode', function(message) {
-	    console.log('mode: ', message);
-	});
-	proxies[id] = { "cache":cache, "irc_client":irc_client  };
-
-  
-
-
-	return proxies[id];
-}
-
+//O sistema inicia aqui, quando fazemos a requisicao para localhost:3000
 app.get('/', function (req, res) {
-  if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
-	proxy_id++;
-	var p =	proxy(	proxy_id,
-			req.cookies.servidor,
-			req.cookies.nick, 
-			req.cookies.canal);
-	res.cookie('id', proxy_id);
-  	res.sendFile(path.join(__dirname, '/index.html'));
-  }
-  else {
-        res.sendFile(path.join(__dirname, '/login.html'));
-  }
+	
+	//Formato req.cookies: {"nick":"Gustavo","canal":"#sd1","servidor":"ircd","id":"1","io":"JL1ReXHlc7_NLAZiAAAC"}
+	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
+		
+		proxy_id++;
+		nicks[proxy_id] = req.cookies.nick;
+		servidores[proxy_id] = req.cookies.servidor;
+		canais[proxy_id] = req.cookies.canal;
+
+		res.cookie('id', proxy_id);
+		res.sendFile(path.join(__dirname, '/index.html'));
+
+	}else {
+		res.sendFile(path.join(__dirname, '/login.html'));
+	}
 });
 
-app.get('/obter_mensagem/:timestamp', function (req, res) {
-  var id = req.cookies.id;
-  res.append('Content-type', 'application/json');
-  res.send(proxies[id].cache);
-});
+//conecta cliente e servidor via websocket
+io.on('connection', function (socket) {
+	
+	proxies[proxy_id] = socket;
+	
+	var client = proxies[proxy_id];
 
-app.post('/gravar_mensagem', function (req, res) {
-  proxies[req.cookies.id].cache.push(req.body);
-  var irc_client = proxies[req.cookies.id].irc_client;
-  irc_client.say(irc_client.opt.channels[0], req.body.msg );
-  res.end();
-});
+	client.nick =  nicks[proxy_id];
+	client.servidor = servidores[proxy_id];
+	client.canal = canais[proxy_id];
 
-app.get('/mode/:usuario/:args', function (req, res){
-  var usuario = req.params.usuario;
-  var args = req.params.args;
-  //var retorno = '{"usuario":'+usuario+','+
-  //		  '"args":"'+args+'}';
-  
-  var irc_client = proxies[req.cookies.id].irc_client;
-  var retorno = irc_client.send("mode", usuario, args);
-  res.send(retorno);
-});
-app.get('/mode/', function (req, res){
-  
-  var irc_client = proxies[req.cookies.id].irc_client;
-  var retorno = irc_client.send("mode", req.cookies.nick);
-  res.send(retorno);
-});
+	//cria o cliente irc
+	irc_client=new irc.Client(client.servidor, client.nick);
 
+	//o cliente irc vai ouvir respostas do servidor irc atraves dos eventos abaixo
+	//e a resposta sera repassada deste servidor para o index.html onde tem outros
+	//eventos com o mesmo nome preparados para trata-los
+	irc_client.addListener('registered', function(message){
+		socket.emit('registrado', "Voce esta registrado no irc");
+	});
+
+	irc_client.addListener('motd', function(motd){
+		socket.emit('motd', '<pre>'+motd+'</pre>');
+	});
+
+	irc_client.addListener('error', function(message){
+		socket.emit('erro', 'Um erro ocorreu: '+message);
+	});
+
+	irc_client.addListener('nick', function(oldnick, newnick, channels, message){
+		socket.emit('nick', {'velhonick': oldnick,
+		'novonick':newnick, 
+		'canais':channels,
+		'mensagem':message });
+	});
+
+	client.irc_client = irc_client;
+
+	//trata as mensagens vindas da interface web(index.html)
+	socket.on('message', function (msg) {
+
+		console.log('Messagem recebida: ', msg);
+				
+		if(msg.charAt(0) == '/'){
+
+			var comando = msg.split(' ');
+			switch(comando[0].toUpperCase()){
+				
+				case '/NICK': executarComandoNick(comando[1], client);
+				break;
+
+				case '/MOTD': client.irc_client.send('motd');
+				break;
+			}
+		}else{
+			socket.broadcast.emit('message', socket.nick+': '+msg);
+		}
+	});
+});
 
 app.post('/login', function (req, res) { 
    res.cookie('nick', req.body.nome);
@@ -95,6 +113,6 @@ app.post('/login', function (req, res) {
    res.redirect('/');
 });
 
-app.listen(3000, function () {				
+server.listen(3000, function () {				
   console.log('Example app listening on port 3000!');	
 });

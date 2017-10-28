@@ -1,20 +1,110 @@
 <html>
-<head>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	<script src="js/functions.js" type="text/javascript"></script>
-	<script src="js/js.cookie.js" type="text/javascript"></script>
-	<title>bate-papo ajax</title>
-</head>
-<body onload="iniciar('mural')">
-<div style="width:700px; height:400px; overflow: auto;" id="mural"></div>
-<br/>
-<div id="status"></div><br/>
-Mensagem: <input type="text" size="30" id="mensagem"> 
-<input type="button" value="enviar" onclick="submete_mensagem('mensagem')">
- <select id="mode" onchange="trocarMode('mode')">
-  <option value="+i">+i</option>
-  <option value="-i">-i</option>
-</select> 
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+		<script src="js/functions.js" type="text/javascript"></script>
+		<script src="js/js.cookie.js" type="text/javascript"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<link rel="stylesheet" type="text/css" href="css/estilo.css"/>
+		<script>
+			$(function(){
+				
+				//cria o websocket
+				//obs: para enviar mensagens via websocket
+				//usa-se sempre o o metodo 'emit' do websocket
+				//isso vale para as duas extremidades da conexao
+				var iosocket = io(); 
+				
+				//conecta com o servidor
+				iosocket.on('connect', function () {
+					
+					$('#mural').append('Voce esta conectado.<br>');
+					
+					//os eventos abaixo tratam as respostas vindas do servidor proxy
+					iosocket.on('message', function(message) {
+						var data = new Date();
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] '+message+'<br>');
+					});
 
-</body>
+					iosocket.on('mudanca-de-nick',function(message){
+						$('#mural').append('Servidor: '+message+'<br>');
+					});
+
+					iosocket.on('nick', function(dados){
+						$('#mural').append('Servidor: Voce mudou o seu nick para \''+dados.novonick.toString()+'\'!<br>');
+						$("#status").text("Conectado - irc://"+
+						dados.novonick+"@"+
+						Cookies.get("servidor")+"/"+
+						Cookies.get("canal"));
+					});
+					
+					iosocket.on('motd', function(motd){
+						$('#mural').append(motd+'<br>');						
+					});
+					iosocket.on('registrado', (data)=>{
+						$('#mural').append(data+' <br>');					
+					});
+					iosocket.on('erro', function(error){
+						$('mural').append(error+' <br>');
+					});
+
+					iosocket.on('disconnect', function() {
+						$('#mural').append('Voce esta desconectado.<br>');
+					});
+				});
+				
+				//evento quando a tecla enter e pressionada
+				$('#mensagem').keypress(function(event) {
+					var data = new Date();
+					if(event.which == 13) {
+
+						
+						event.preventDefault(); 
+
+						iosocket.emit('message', $('#mensagem').val());
+						
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$('#mensagem').val()+'<br>');
+						
+						$('#mensagem').val('');
+
+					}
+				});
+
+				//evento quando o botao de enviar e clicado
+				$('#enviar').on('click',function(event){
+
+					var data = new Date();
+					iosocket.emit('message', $('#mensagem').val());
+					
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$('#mensagem').val()+'<br>');
+
+						$('#mensagem').val('');
+				});
+
+			});
+		
+		</script>
+		<title>Sala de bate-papo</title>
+
+	</head>
+
+
+	<body onload="iniciar('mural')">
+		
+		
+		<div class='mural' id="mural"></div>
+
+		<br/>
+	
+		<div id="status"></div><br/>
+		
+		
+		Mensagem: <input type="text" size="30" id="mensagem"> 
+		<input type="button" value="enviar" id='enviar' >
+
+		<select id="mode" onchange="trocarMode('mode')">
+			<option value="+i">+i</option>
+			<option value="-i">-i</option>
+		</select> 
+	</body>
+
 </html>
