@@ -7,19 +7,20 @@
 		<link rel="stylesheet" type="text/css" href="css/estilo.css"/>
 		<script>
 			$(function(){
-				//cria o websocket
+			
 				var iosocket = io(); 
 				
-				//quando se conecta, ouve mensagens do servidor
+
 				iosocket.on('connect', function () {
-					//mensagem na interface web quando a conexao e bem suscedida
-					$('#mural').append('Voce esta conectado.<br>');
 					
-					//fica ouvindo mensagens desse evento ´message´ do servidor
+					$('#mural').append('Voce esta conectado.<br>');
+	
 					iosocket.on('message', function(message) {
 						var data = new Date();
-						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] '+message+'<br>');
+		$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] '+message+'<br>');
 					});
+
+
 					iosocket.on('mudanca-de-nick',function(message){
 						$('#mural').append('Servidor: '+message+'<br>');
 					});
@@ -37,46 +38,52 @@
 					});
 				});
 				
-				// fica aguadando a tecla enter(13 na tabela ASC) ser pressionada no elemento com id ´mensagem´
+				
 				$('#mensagem').keypress(function(event) {
 					var data = new Date();
 					if(event.which == 13) {
 
-						//evita algum comportamento padrao da tecla pressionada que esta configurado no navegador 
+						
 						event.preventDefault(); 
-						
-						//envia o texto escrito dentro do componente com o id ´mensagem´ para o servidor
-						iosocket.emit('message', $('#mensagem').val());
 
-						//pega a mensagem digitada e cola ela no componente com id ´mural´
-						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$(' #mensagem').val()+'<br>');
+						iosocket.emit('message', $('#mensagem').val());
 						
-						//limpa a componente do html com id ´mensagem´ colocando uma string vazia no mesmo
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$('#mensagem').val()+'<br>');
+						
 						$('#mensagem').val('');
 
 					}
 				});
+				$('#enviar').on('click',function(event){
+
+					var data = new Date();
+					iosocket.emit('message', $('#mensagem').val());
+					
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$('#mensagem').val()+'<br>');
+
+						$('#mensagem').val('');
+				});
 
 			});
+		
 		</script>
 		<title>Sala de bate-papo</title>
 
 	</head>
 
-	<!--Quando o arquivo html e criado, chama esse metodo do arquivo functions.js -->
+
 	<body onload="iniciar('mural')">
 		
-		<!--Aqui se encontra o mural onde as mensagens serao coladas-->
+		
 		<div class='mural' id="mural"></div>
 
 		<br/>
-
-		<!--Aqui aparece a mensagem de status. Ex: Conectado - irc://Gustavo@ircd/#sd1-->
+	
 		<div id="status"></div><br/>
 		
-		<!--Entrada de mensagens do usuario atraves da interface web, e chama o metodo submete_mensagem no arquivo function.js-->
+		
 		Mensagem: <input type="text" size="30" id="mensagem"> 
-		<input type="button" value="enviar" onclick="submete_mensagem('mensagem')">
+		<input type="button" value="enviar" id='enviar' >
 
 		<select id="mode" onchange="trocarMode('mode')">
 			<option value="+i">+i</option>
