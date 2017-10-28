@@ -7,38 +7,52 @@
 		<link rel="stylesheet" type="text/css" href="css/estilo.css"/>
 		<script>
 			$(function(){
-			
+				
+				//cria o websocket
+				//obs: para enviar mensagens via websocket
+				//usa-se sempre o o metodo 'emit' do websocket
+				//isso vale para as duas extremidades da conexao
 				var iosocket = io(); 
 				
-
+				//conecta com o servidor
 				iosocket.on('connect', function () {
 					
 					$('#mural').append('Voce esta conectado.<br>');
-	
+					
+					//os eventos abaixo tratam as respostas vindas do servidor proxy
 					iosocket.on('message', function(message) {
 						var data = new Date();
-		$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] '+message+'<br>');
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] '+message+'<br>');
 					});
-
 
 					iosocket.on('mudanca-de-nick',function(message){
 						$('#mural').append('Servidor: '+message+'<br>');
+					});
+
+					iosocket.on('nick', function(dados){
+						$('#mural').append('Servidor: Voce mudou o seu nick para \''+dados.novonick.toString()+'\'!<br>');
+						$("#status").text("Conectado - irc://"+
+						dados.novonick+"@"+
+						Cookies.get("servidor")+"/"+
+						Cookies.get("canal"));
 					});
 					
 					iosocket.on('motd', function(motd){
 						$('#mural').append(motd+'<br>');						
 					});
-					iosocket.on('me conectei', (data)=>{
-						$('#mural').append('Me conectei <br>');					
+					iosocket.on('registrado', (data)=>{
+						$('#mural').append(data+' <br>');					
+					});
+					iosocket.on('erro', function(error){
+						$('mural').append(error+' <br>');
 					});
 
-					//quando se desconecta lanca uma mensagem na interface web no navegador
 					iosocket.on('disconnect', function() {
 						$('#mural').append('Voce esta desconectado.<br>');
 					});
 				});
 				
-				
+				//evento quando a tecla enter e pressionada
 				$('#mensagem').keypress(function(event) {
 					var data = new Date();
 					if(event.which == 13) {
@@ -54,6 +68,8 @@
 
 					}
 				});
+
+				//evento quando o botao de enviar e clicado
 				$('#enviar').on('click',function(event){
 
 					var data = new Date();
