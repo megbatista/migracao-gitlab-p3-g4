@@ -10,6 +10,7 @@ var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
 var executarComandoNick = require('./comandos/nick');
+var executarComandoPrivmsg = require('./comandos/privmsg');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -18,9 +19,9 @@ app.use(bodyParser.urlencoded( { extended: true } ));
 app.use(cookieParser());
 app.use(express.static('public'));
 
-
-
 var proxies = {}; // mapa de proxys
+var clients = [];
+
 var nicks=[];
 var servidores=[];
 var canais=[];
@@ -50,15 +51,15 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	
 	proxies[proxy_id] = socket;
-	
-	var client = proxies[proxy_id];
+
+	var client = socket;
 
 	client.nick =  nicks[proxy_id];
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
 
 	//cria o cliente irc
-	irc_client=new irc.Client(client.servidor, client.nick);
+	irc_client = new irc.Client(client.servidor, client.nick);
 
 	//o cliente irc vai ouvir respostas do servidor irc atraves dos eventos abaixo
 	//e a resposta sera repassada deste servidor para o index.html onde tem outros
@@ -82,12 +83,20 @@ io.on('connection', function (socket) {
 		'mensagem':message });
 	});
 
+	irc_client.addListener('privmsg', function(to,msg)
+	{
+		socket.emit('privmsg',{'to':to, 'msg':msg});
+		console.log("entrou no listener");
+	});
+
 	client.irc_client = irc_client;
+
+	clients[proxy_id] = client;
 
 	//trata as mensagens vindas da interface web(index.html)
 	socket.on('message', function (msg) {
 
-		console.log('Messagem recebida: ', msg);
+		console.log(client.nick+': '+ msg);
 				
 		if(msg.charAt(0) == '/'){
 
@@ -98,6 +107,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/MOTD': client.irc_client.send('motd');
+				break;
+
+				case '/PRIVMSG' : executarComandoPrivmsg(comando, client, clients, canais);
 				break;
 			}
 		}else{
