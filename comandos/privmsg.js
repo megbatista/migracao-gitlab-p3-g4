@@ -19,7 +19,7 @@ function executarComandoPrivmsg(param, cl, clients, canais)
                 if(client.nick === param[1])
                 {
                     cl.irc_client.emit('privmsg',client.nick.toString(), msg.toString());
-                    client.emit('message',cl.nick+': ' + msg.toString());
+                    client.emit('envio-privmsg',cl.nick+': ' + msg.toString());
                 }
             });
         }
