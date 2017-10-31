@@ -15,7 +15,7 @@
 ## Documentação
 
 
-A documentação pode ser encontrada nas paginas wiki deste projeto 2 no gitlab ou tambem pelo link:
+A documentação pode ser encontrada nas páginas wiki deste projeto 2 no gitlab ou também pelo link:
 
 [https://gitlab.com/sd1-ec-2017-2/p2-g4/wikis/home](https://gitlab.com/sd1-ec-2017-2/p2-g4/wikis/home)
 
