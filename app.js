@@ -35,15 +35,14 @@ app.get('/', function (req, res) {
 	//Formato req.cookies: {"nick":"Gustavo","canal":"#sd1","servidor":"ircd","id":"1","io":"JL1ReXHlc7_NLAZiAAAC"}
 	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
 		
-		
+		proxy_id++;
+
 		nicks[proxy_id] = req.cookies.nick;
 		servidores[proxy_id] = req.cookies.servidor;
 		canais[proxy_id] = req.cookies.canal;
 
 		res.cookie('id', proxy_id);
-		res.sendFile(path.join(__dirname, '/index.html'));
-
-		proxy_id++;
+		res.sendFile(path.join(__dirname, '/index.html'));		
 
 	}else {
 		res.sendFile(path.join(__dirname, '/login.html'));

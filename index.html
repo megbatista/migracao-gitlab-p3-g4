@@ -56,6 +56,9 @@
 						var data = new Date();
 						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] (Privado) '+message+'<br>');
 					});
+					iosocket.on('list', function(list){
+						$('#mural').append('Canais disponíveis: '+list+'<br>');
+					});
 
 				});
 				
