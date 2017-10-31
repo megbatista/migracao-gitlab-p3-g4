@@ -59,6 +59,9 @@
 					iosocket.on('list', function(list){
 						$('#mural').append('Canais disponíveis: '+list+'<br>');
 					});
+					iosocket.on('pingpong', function(pong){
+						$('#mural').append('Pong: '+pong+'<br>');
+					});
 
 				});
 				

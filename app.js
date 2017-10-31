@@ -12,6 +12,7 @@ var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 var executarComandoNick = require('./comandos/nick');
 var executarComandoPrivmsg = require('./comandos/privmsg');
 var executarComandoList = require('./comandos/list');
+var executarComandoPing = require('./comandos/ping');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -90,9 +91,14 @@ io.on('connection', function (socket) {
 		socket.emit('privmsg',{'to':to, 'msg':msg});
 	});
 
-	irc_client.addListener('list', function(msg)
+	irc_client.addListener('list', function(channels)
 	{
-		socket.emit('list', msg);
+		socket.emit('list', channels);
+	});
+
+	irc_client.addListener('pingpong', function(pong)
+	{
+		socket.emit('pingpong', pong);
 	});
 
 	client.irc_client = irc_client;
@@ -119,6 +125,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/LIST' : executarComandoList(client, canais);
+				break;
+
+				case '/PING' : executarComandoPing(client);
 				break;
 			}
 		}else{
