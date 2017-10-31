@@ -79,11 +79,10 @@ io.on('connection', function (socket) {
 		socket.emit('erro', 'Um erro ocorreu: '+message);
 	});
 
-	irc_client.addListener('nick', function(oldnick, newnick, channels, message){
+	irc_client.addListener('nick', function(oldnick, newnick, channels){
 		socket.emit('nick', {'velhonick': oldnick,
 		'novonick':newnick, 
-		'canais':channels,
-		'mensagem':message });
+		'canais':channels });
 	});
 
 	irc_client.addListener('privmsg', function(to,msg)
