@@ -1,14 +1,4 @@
 /*
-  Adiciona <mensagem> no <elemento_id>. 
-*/
-function adiciona_mensagem(mensagem,elemento_id,timestamp) {
-	var novo_elemento = document.createElement('div');
-	novo_elemento.id = "mensagem"+timestamp;
-	document.getElementById(elemento_id).appendChild(novo_elemento);
-	document.getElementById('mensagem'+timestamp).innerHTML=mensagem;
-}
-
-/*
   Transforma timestamp em formato HH:MM:SS
 */
 function timestamp_to_date( timestamp ) {
@@ -27,13 +17,8 @@ function iniciar(elemento_id) {
 			Cookies.get("nick")+"@"+
 			Cookies.get("servidor")+"/"+
 			Cookies.get("canal"));
-	// carrega_mensagens(elemento_id,0);
 }
 
-/*
-  Carrega as mensagens ocorridas após o <timestamp>,
-  acrescentando-as no <elemento_id>
-*/
 var novo_timestamp="0";
 
 function trocarMode(elemento){

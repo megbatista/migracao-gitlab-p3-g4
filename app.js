@@ -95,7 +95,6 @@ io.on('connection', function (socket) {
 		socket.emit('list', msg);
 	});
 
-
 	client.irc_client = irc_client;
 
 	clients[proxy_id] = client;
