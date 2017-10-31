@@ -94,7 +94,6 @@ io.on('connection', function (socket) {
 	irc_client.addListener('list', function(msg)
 	{
 		socket.emit('list', msg);
-		console.log(msg);
 	});
 
 
