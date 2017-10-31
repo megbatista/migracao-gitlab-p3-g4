@@ -11,6 +11,7 @@ var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 //comandos
 var executarComandoNick = require('./comandos/nick');
 var executarComandoPrivmsg = require('./comandos/privmsg');
+var executarComandoList = require('./comandos/list');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -34,13 +35,15 @@ app.get('/', function (req, res) {
 	//Formato req.cookies: {"nick":"Gustavo","canal":"#sd1","servidor":"ircd","id":"1","io":"JL1ReXHlc7_NLAZiAAAC"}
 	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
 		
-		proxy_id++;
+		
 		nicks[proxy_id] = req.cookies.nick;
 		servidores[proxy_id] = req.cookies.servidor;
 		canais[proxy_id] = req.cookies.canal;
 
 		res.cookie('id', proxy_id);
 		res.sendFile(path.join(__dirname, '/index.html'));
+
+		proxy_id++;
 
 	}else {
 		res.sendFile(path.join(__dirname, '/login.html'));
@@ -86,8 +89,14 @@ io.on('connection', function (socket) {
 	irc_client.addListener('privmsg', function(to,msg)
 	{
 		socket.emit('privmsg',{'to':to, 'msg':msg});
-		console.log("entrou no listener");
 	});
+
+	irc_client.addListener('list', function(msg)
+	{
+		socket.emit('list', msg);
+		console.log(msg);
+	});
+
 
 	client.irc_client = irc_client;
 
@@ -110,6 +119,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/PRIVMSG' : executarComandoPrivmsg(comando, client, clients, canais);
+				break;
+
+				case '/LIST' : executarComandoList(client, canais);
 				break;
 			}
 		}else{
