@@ -9,10 +9,12 @@ var socketio_cookieParser = require('socket.io-cookie'); //processa cookies do s
 var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
-var executarComandoNick = require('./comandos/nick');
-var executarComandoPrivmsg = require('./comandos/privmsg');
-var executarComandoList = require('./comandos/list');
-var executarComandoPing = require('./comandos/ping');
+var Nick = require('./comandos/nick');
+var Privmsg = require('./comandos/privmsg');
+var List = require('./comandos/list');
+var Ping = require('./comandos/ping');
+var Join = require('./comandos/join');
+var PrivmsgChannel = require('./comandos/privmsg-channel');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -61,6 +63,8 @@ io.on('connection', function (socket) {
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
 
+	Join(client, client.canal);
+
 	//cria o cliente irc
 	irc_client = new irc.Client(client.servidor, client.nick);
 
@@ -100,6 +104,11 @@ io.on('connection', function (socket) {
 		socket.emit('pingpong', pong);
 	});
 
+	irc_client.addListener('join', function(channel)
+	{
+		socket.emit('join', channel);
+	});
+
 	client.irc_client = irc_client;
 
 	clients[proxy_id] = client;
@@ -109,28 +118,39 @@ io.on('connection', function (socket) {
 
 		console.log(client.nick+': '+ msg);
 				
-		if(msg.charAt(0) == '/'){
+		if(msg.charAt(0) == '/')
+		{
 
 			var comando = msg.split(' ');
-			switch(comando[0].toUpperCase()){
+
+			switch(comando[0].toUpperCase())
+			{
 				
-				case '/NICK': executarComandoNick(comando[1], client);
+				case '/NICK': Nick(comando[1], client);
 				break;
 
 				case '/MOTD': client.irc_client.send('motd');
 				break;
 
-				case '/PRIVMSG' : executarComandoPrivmsg(comando, client, clients, canais);
+				case '/PRIVMSG' : Privmsg(comando, client, clients, canais);
 				break;
 
-				case '/LIST' : executarComandoList(client, canais);
+				case '/LIST' : List(client, canais);
 				break;
 
-				case '/PING' : executarComandoPing(client);
+				case '/PING' : Ping(client);
+				break;
+
+				case '/JOIN' : Join(client, comando[1]);
 				break;
 			}
-		}else{
-			socket.broadcast.emit('message', socket.nick+': '+msg);
+
+		}
+		else
+		{
+
+			PrivmsgChannel(msg, client, clients, canais);
+			//socket.broadcast.emit('message', socket.nick+': '+msg);
 		}
 	});
 });

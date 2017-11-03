@@ -1,4 +1,4 @@
-function executarComandoNick(param, client)
+function Nick(param, client)
 {
 	if(param)
 	{
@@ -9,4 +9,4 @@ function executarComandoNick(param, client)
 	}
 }
 
-module.exports = executarComandoNick;
+module.exports = Nick;

@@ -47,7 +47,7 @@
 						$('mural').append(error+' <br>');
 					});
 					iosocket.on('disconnect', function() {
-						$('#mural').append('Você está desconectado.<br>');
+						$('#mural').append('Você está desconectado <br>');
 					});
 					iosocket.on('privmsg', function(dados) {
 						$('#mural').append('Servidor: mensagem privada para '+ dados.to +': '+dados.msg+ '<br>');
@@ -61,6 +61,16 @@
 					});
 					iosocket.on('pingpong', function(pong){
 						$('#mural').append('Pong: '+pong+'<br>');
+					});
+					iosocket.on('join', function(channel){
+						$('#mural').append('Servidor: Você entrou no canal '+channel+'<br>');
+						$("#status").text("Conectado - irc://"+
+						Cookies.get("nick")+"@"+
+						Cookies.get("servidor")+"/"+
+						channel);	
+					});
+					iosocket.on('join-channel', function(nick){
+						$('#mural').append('Servidor: '+nick+' entrou nesse canal'+'<br>');
 					});
 
 				});
