@@ -82,6 +82,11 @@ io.on('connection', function (socket) {
 		'mensagem':message });
 	});
 
+	irc_client.addListener('quit', function(nick, reason, channels, message){
+		socket.broadcast.emit('quit', nick);
+		client.disconnect();
+	});
+
 	client.irc_client = irc_client;
 
 	//trata as mensagens vindas da interface web(index.html)
@@ -98,6 +103,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/MOTD': client.irc_client.send('motd');
+				break;
+
+				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
 				break;
 			}
 		}else{

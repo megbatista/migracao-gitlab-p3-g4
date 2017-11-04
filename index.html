@@ -50,6 +50,11 @@
 					iosocket.on('disconnect', function() {
 						$('#mural').append('Voce esta desconectado.<br>');
 					});
+
+					iosocket.on('quit', function(nick) {
+						$('#mural').append(nick + ' saiu do chat.<br>');
+						iosocket.destroy();
+					});
 				});
 				
 				//evento quando a tecla enter e pressionada
