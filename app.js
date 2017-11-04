@@ -27,7 +27,6 @@ var servidores=[];
 var canais=[];
 var proxy_id = 0;
 var irc_client;
-var clients=[];
 
 //O sistema inicia aqui, quando fazemos a requisicao para localhost:3000
 app.get('/', function (req, res) {
@@ -52,8 +51,8 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	
 	proxies[proxy_id] = socket;
-	var client = proxies[proxy_id];
-	clients[proxy_id] = client;
+	var client = socket;
+	
 	client.nick =  nicks[proxy_id];
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
