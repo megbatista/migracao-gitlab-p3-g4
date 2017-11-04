@@ -10,6 +10,7 @@ var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
 var executarComandoNick = require('./comandos/nick');
+var executarComandoInvite = require('./comandos/invite');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -26,6 +27,7 @@ var servidores=[];
 var canais=[];
 var proxy_id = 0;
 var irc_client;
+var clients=[];
 
 //O sistema inicia aqui, quando fazemos a requisicao para localhost:3000
 app.get('/', function (req, res) {
@@ -50,9 +52,8 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	
 	proxies[proxy_id] = socket;
-	
 	var client = proxies[proxy_id];
-
+	clients[proxy_id] = client;
 	client.nick =  nicks[proxy_id];
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
@@ -87,6 +88,10 @@ io.on('connection', function (socket) {
 		client.disconnect();
 	});
 
+	irc_client.addListener('invite', function(channel, from, message) {
+		socket.emit('invite', {'canal': channel, 'from': from, 'msg': message});
+	});
+
 	client.irc_client = irc_client;
 
 	//trata as mensagens vindas da interface web(index.html)
@@ -106,6 +111,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
+				break;
+
+				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
 				break;
 			}
 		}else{
