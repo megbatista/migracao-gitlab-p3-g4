@@ -28,30 +28,11 @@ function Privmsg(param, cl, clients, canais)
 
                     //agora emite o evento para o cliente que possui o nick igual ao param[1].
                     //o evento envio-privmsg é captado pelo index.html, de forma que quem recebeu a mensagem saiba que ela foi enviada no privado
-                    client.emit('envio-privmsg',cl.nick+': ' + msg);
+                    client.irc_client.emit('envio-privmsg',cl.nick+': ' + msg);
                     
                 }
             });
         }
-
-        //TENTEATIVA DE TORNAR A PRIVMSG MAIS BONITA
-        
-        // var recipient = clients.filter(function(client)
-        // {
-        //     return client.nick === param[1];
-        // });
-
-        // if(recipient)
-        // {
-        //     recipient.emit('envio-privmsg', cl.nick+': ' + msg);
-        //     cl.irc_client.emit('privmsg', param[1], msg);
-        // }
-        // else
-        // {
-        //     cl.irc_client.emit('error', 'O nick '+param[1]+' não foi encontrado.');
-        // }
-
-
     } 
 
 }

@@ -67,8 +67,6 @@ io.on('connection', function (socket) {
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
 
-	
-
 	//cria o cliente irc
 	irc_client = new irc.Client(client.servidor, client.nick);
 
@@ -97,6 +95,12 @@ io.on('connection', function (socket) {
 	{
 		socket.emit('privmsg', to);
 	});
+
+	irc_client.addListener('envio-privmsg', function(to)
+	{
+		socket.emit('envio-privmsg', to);
+	});
+
 
 	irc_client.addListener('list', function(channels)
 	{
@@ -148,6 +152,7 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/JOIN' : Join(client, comando[1], canais);
+							   Update(client);
 				break;
 
 			}
@@ -162,16 +167,23 @@ io.on('connection', function (socket) {
 
 app.post('/login', function (req, res) 
 { 
-   res.cookie('nick', req.body.nome);
+	res.cookie('nick', req.body.nome);
 
-   if(req.body.canal[0]!='#')
-   {
-		req.body.canal = '#'+req.body.canal;
-   }
+	if(req.body.canal[0]!='#')
+	{
+			req.body.canal = '#'+req.body.canal;
+	}
 
-   res.cookie('canal', req.body.canal);
-   res.cookie('servidor', req.body.servidor);
-   res.redirect('/');
+	res.cookie('canal', req.body.canal);
+	res.cookie('servidor', req.body.servidor);
+	res.redirect('/');
+});
+
+app.post('/update', function (req, res) 
+{ 
+	res.cookie('nick', req.body.cookiedata.nick);
+	res.cookie('canal', req.body.cookiedata.canal);
+	res.cookie('servidor', req.body.cookiedata.servidor);
 });
 
 server.listen(3000, function () {				
