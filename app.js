@@ -91,9 +91,9 @@ io.on('connection', function (socket) {
 		'canais':channels });
 	});
 
-	irc_client.addListener('privmsg', function(to,msg)
+	irc_client.addListener('privmsg', function(to)
 	{
-		socket.emit('privmsg',{'to':to, 'msg':msg});
+		socket.emit('privmsg', to);
 	});
 
 	irc_client.addListener('list', function(channels)

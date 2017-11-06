@@ -49,8 +49,8 @@
 					iosocket.on('disconnect', function() {
 						$('#mural').append('Você está desconectado <br>');
 					});
-					iosocket.on('privmsg', function(dados) {
-						$('#mural').append('Servidor: mensagem privada para '+ dados.to +': '+dados.msg+ '<br>');
+					iosocket.on('privmsg', function(to) {
+						$('#mural').append('Servidor: mensagem privada para '+ to + ' enviada! <br>');
 					});
 					iosocket.on('envio-privmsg', function(message){
 						var data = new Date();
