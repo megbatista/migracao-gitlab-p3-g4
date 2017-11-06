@@ -17,7 +17,7 @@
 				//conecta com o servidor
 				iosocket.on('connect', function () {
 					
-					$('#mural').append('Voce esta conectado.<br>');
+					$('#mural').append('Você está conectado.<br>');
 					
 					//os eventos abaixo tratam as respostas vindas do servidor proxy
 					iosocket.on('message', function(message) {
@@ -30,11 +30,11 @@
 					});
 
 					iosocket.on('nick', function(dados){
-						$('#mural').append('Servidor: Voce mudou o seu nick para \''+dados.novonick.toString()+'\'!<br>');
+						$('#mural').append('Servidor: você mudou o seu nick para \''+dados.novonick+'\'!<br>');
 						$("#status").text("Conectado - irc://"+
 						dados.novonick+"@"+
 						Cookies.get("servidor")+"/"+
-						Cookies.get("canal"));
+						Cookies.get("canal"));						
 					});
 					
 					iosocket.on('motd', function(motd){
@@ -46,9 +46,21 @@
 					iosocket.on('erro', function(error){
 						$('mural').append(error+' <br>');
 					});
-
 					iosocket.on('disconnect', function() {
-						$('#mural').append('Voce esta desconectado.<br>');
+						$('#mural').append('Você está desconectado.<br>');
+					});
+					iosocket.on('privmsg', function(dados) {
+						$('#mural').append('Servidor: mensagem privada para '+ dados.to +': '+dados.msg+ '<br>');
+					});
+					iosocket.on('envio-privmsg', function(message){
+						var data = new Date();
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] (Privado) '+message+'<br>');
+					});
+					iosocket.on('list', function(list){
+						$('#mural').append('Canais disponíveis: '+list+'<br>');
+					});
+					iosocket.on('pingpong', function(pong){
+						$('#mural').append('Pong: '+pong+'<br>');
 					});
 
 					iosocket.on('quit', function(nick) {
@@ -59,13 +71,14 @@
 					iosocket.on('invite', function(msg){
 						$('#mural').append(msg.from + ' te convidou para o canal ' + msg.canal + '<br>');
 					});
+
 				});
 				
 				//evento quando a tecla enter e pressionada
 				$('#mensagem').keypress(function(event) {
 					var data = new Date();
-					if(event.which == 13) {
 
+					if(event.which == 13) {
 						
 						event.preventDefault(); 
 
@@ -82,11 +95,12 @@
 				$('#enviar').on('click',function(event){
 
 					var data = new Date();
+
 					iosocket.emit('message', $('#mensagem').val());
 					
-						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$('#mensagem').val()+'<br>');
+					$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+']: '+$('#mensagem').val()+'<br>');
 
-						$('#mensagem').val('');
+					$('#mensagem').val('');
 				});
 
 			});
