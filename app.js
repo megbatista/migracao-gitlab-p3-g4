@@ -14,6 +14,7 @@ var executarComandoInvite = require('./comandos/invite');
 var executarComandoPrivmsg = require('./comandos/privmsg');
 var executarComandoList = require('./comandos/list');
 var executarComandoPing = require('./comandos/ping');
+var executarComandoWhois = require('./comandos/whois');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -109,6 +110,11 @@ io.on('connection', function (socket) {
 	irc_client.addListener('invite', function(channel, from, message) {
 		socket.emit('invite', {'canal': channel, 'from': from, 'msg': message});
 	});
+	
+	irc_client.addListener('whois', function(info)
+	{
+		socket.emit('whois', info);
+	});
 
 	client.irc_client = irc_client;
 
@@ -135,7 +141,8 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
-
+                break;
+                
 				case '/PRIVMSG' : executarComandoPrivmsg(comando, client, clients, canais);
 				break;
 
@@ -143,7 +150,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/PING' : executarComandoPing(client);
-
+				break;
+				
+				case '/WHOIS': executarComandoWhois(comando[1],client);
 				break;
 			}
 		}else{
