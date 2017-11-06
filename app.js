@@ -9,12 +9,16 @@ var socketio_cookieParser = require('socket.io-cookie'); //processa cookies do s
 var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
+
 var Nick = require('./comandos/nick');
 var Privmsg = require('./comandos/privmsg');
 var List = require('./comandos/list');
 var Ping = require('./comandos/ping');
 var Join = require('./comandos/join');
 var PrivmsgChannel = require('./comandos/privmsg-channel');
+var executarComandoInvite = require('./comandos/invite');
+var executarComandoWhois = require('./comandos/whois');
+
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -60,9 +64,9 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	
 	proxies[proxy_id] = socket;
-
+	
 	var client = socket;
-
+	
 	client.nick =  nicks[proxy_id];
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
@@ -112,9 +116,24 @@ io.on('connection', function (socket) {
 		socket.emit('pingpong', pong);
 	});
 
+
 	irc_client.addListener('join', function(channel)
 	{
 		socket.emit('join', channel);
+	});
+	
+	irc_client.addListener('quit', function(nick, reason, channels, message){
+		socket.broadcast.emit('quit', nick);
+		client.disconnect();
+	});
+
+	irc_client.addListener('invite', function(channel, from, message) {
+		socket.emit('invite', {'canal': channel, 'from': from, 'msg': message});
+	});
+	
+	irc_client.addListener('whois', function(info)
+	{
+		socket.emit('whois', info);
 	});
 
 	client.irc_client = irc_client;
@@ -142,11 +161,19 @@ io.on('connection', function (socket) {
 				case '/MOTD': client.irc_client.send('motd');
 				break;
 
+<<<<<<< app.js
 				case '/PRIVMSG' : Privmsg(comando, client, clients, canais);
 				break;
 
 				case '/LIST' : List(client, canais);
 				break;
+=======
+
+				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
+				break;
+
+				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
+                break;
 
 				case '/PING' : Ping(client);
 				break;
@@ -154,6 +181,8 @@ io.on('connection', function (socket) {
 				case '/JOIN' : Join(client, comando[1], canais);							   
 				break;
 
+				case '/WHOIS': executarComandoWhois(comando[1],client);
+				break;
 			}
 
 		}

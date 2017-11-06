@@ -74,6 +74,29 @@
 					});
 
 
+					iosocket.on('quit', function(nick) {
+						$('#mural').append(nick + ' saiu do chat.<br>');
+						iosocket.destroy();
+					});
+
+					iosocket.on('invite', function(msg){
+						$('#mural').append(msg.from + ' te convidou para o canal ' + msg.canal + '<br>');
+					});
+					
+					iosocket.on('whois',function(info){
+						
+						msg =(  "nick: "+info.nick+'<br>'+
+								"user: "+info.user+'<br>'+
+								"host: "+info.host+'<br>'+
+								"realname: "+info.realname+'<br>'+
+								"channels: "+info.channels+'<br>'+
+								"server: "+info.server+'<br>'+
+								"serverinfo: "+info.serverinfo+'<br>'+
+								"operator: "+info.operator+'<br>');
+						
+						$('#mural').append(msg.toString()+'<br>');
+					});
+
 				});
 				
 				//evento quando a tecla enter e pressionada
