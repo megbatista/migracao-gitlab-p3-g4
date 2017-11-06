@@ -15,7 +15,7 @@ var List = require('./comandos/list');
 var Ping = require('./comandos/ping');
 var Join = require('./comandos/join');
 var PrivmsgChannel = require('./comandos/privmsg-channel');
-var Part = require('./comandos/part');
+//var Part = require('./comandos/part');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -24,14 +24,8 @@ app.use(bodyParser.urlencoded( { extended: true } ));
 app.use(cookieParser());
 app.use(express.static('public'));
 
-var proxies = {}; // mapa de proxys
-var clients = [];
 
-var nicks=[];
-var servidores=[];
-var canais=[];
 var proxy_id = 0;
-var irc_client;
 
 //O sistema inicia aqui, quando fazemos a requisicao para localhost:3000
 app.get('/', function (req, res) {
@@ -40,11 +34,6 @@ app.get('/', function (req, res) {
 	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) 
 	{		
 		proxy_id++;
-
-		nicks[proxy_id] = req.cookies.nick;
-		servidores[proxy_id] = req.cookies.servidor;
-		canais[proxy_id] = req.cookies.canal;
-
 		//console.log('nick: '+req.cookies.nick+' servidor: '+req.cookies.servidor+' canal: '+req.cookies.canal);
 
 		res.cookie('id', proxy_id);
@@ -60,18 +49,16 @@ app.get('/', function (req, res) {
 //conecta cliente e servidor via websocket
 io.on('connection', function (socket) {
 	
-	proxies[proxy_id] = socket;
-
 	var client = socket;
 
-	client.nick =  nicks[proxy_id];
-	client.servidor = servidores[proxy_id];
-	client.canal = canais[proxy_id];
+	client.nick =  socket.request.headers.cookie.nick;
+	client.servidor = socket.request.headers.cookie.servidor;
+	client.canal = socket.request.headers.cookie.canal;
 
 	
 
 	//cria o cliente irc
-	irc_client = new irc.Client(client.servidor, client.nick);
+	var irc_client = new irc.Client(client.servidor, client.nick);
 
 	//o cliente irc vai ouvir respostas do servidor irc atraves dos eventos abaixo
 	//e a resposta sera repassada deste servidor para o index.html onde tem outros
@@ -82,6 +69,7 @@ io.on('connection', function (socket) {
 
 	irc_client.addListener('motd', function(motd){
 		socket.emit('motd', '<pre>'+motd+'</pre>');
+		Join(client, client.canal, proxy_id);
 	});
 
 	irc_client.addListener('error', function(message){
@@ -124,9 +112,8 @@ io.on('connection', function (socket) {
 
 	client.irc_client = irc_client;
 
-	Join(client, client.canal, canais, proxy_id);
 
-	clients[proxy_id] = client;
+
 
 	//trata as mensagens vindas da interface web(index.html)
 	socket.on('message', function (msg) {
@@ -147,27 +134,27 @@ io.on('connection', function (socket) {
 				case '/MOTD': client.irc_client.send('motd');
 				break;
 
-				case '/PRIVMSG' : Privmsg(comando, client, clients, canais);
+				case '/PRIVMSG' : Privmsg(comando, client);
 				break;
 
-				case '/LIST' : List(client, canais);
+//				case '/LIST' : List(client);
 				break;
 
 				case '/PING' : Ping(client);
 				break;
 
-				case '/JOIN' : Join(client, comando[1], canais);
+				case '/JOIN' : Join(client, comando[1]);
 				break;
 
-				case '/PART' : Part(client, comando);
-				break;
+//				case '/PART' : Part(client, comando);
+//				break;
 
 			}
 
 		}
 		else
 		{
-			PrivmsgChannel(msg, client, clients, canais);
+			PrivmsgChannel(msg, client);
 		}
 	});
 });
