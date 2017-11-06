@@ -149,14 +149,13 @@ io.on('connection', function (socket) {
 
 				case '/JOIN' : Join(client, comando[1], canais, proxy_id);
 				break;
+
 			}
 
 		}
 		else
 		{
-
 			PrivmsgChannel(msg, client, clients, canais);
-			//socket.broadcast.emit('message', socket.nick+': '+msg);
 		}
 	});
 });

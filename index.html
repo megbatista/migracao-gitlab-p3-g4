@@ -73,10 +73,12 @@
 						$('#mural').append('Servidor: '+nick+' entrou nesse canal'+'<br>');
 					});
 
+
 				});
 				
 				//evento quando a tecla enter e pressionada
-				$('#mensagem').keypress(function(event) {
+				$('#mensagem').keypress(function(event) 
+				{
 					var data = new Date();
 
 					if(event.which == 13) {
@@ -93,7 +95,8 @@
 				});
 
 				//evento quando o botao de enviar e clicado
-				$('#enviar').on('click',function(event){
+				$('#enviar').on('click',function(event)
+				{
 
 					var data = new Date();
 
