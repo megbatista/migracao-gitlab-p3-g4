@@ -10,6 +10,7 @@ var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
 var executarComandoNick = require('./comandos/nick');
+var executarComandoInvite = require('./comandos/invite');
 var executarComandoPrivmsg = require('./comandos/privmsg');
 var executarComandoList = require('./comandos/list');
 var executarComandoPing = require('./comandos/ping');
@@ -54,9 +55,9 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	
 	proxies[proxy_id] = socket;
-
+	
 	var client = socket;
-
+	
 	client.nick =  nicks[proxy_id];
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
@@ -100,6 +101,15 @@ io.on('connection', function (socket) {
 		socket.emit('pingpong', pong);
 	});
 
+	irc_client.addListener('quit', function(nick, reason, channels, message){
+		socket.broadcast.emit('quit', nick);
+		client.disconnect();
+	});
+
+	irc_client.addListener('invite', function(channel, from, message) {
+		socket.emit('invite', {'canal': channel, 'from': from, 'msg': message});
+	});
+
 	client.irc_client = irc_client;
 
 	clients[proxy_id] = client;
@@ -120,6 +130,12 @@ io.on('connection', function (socket) {
 				case '/MOTD': client.irc_client.send('motd');
 				break;
 
+
+				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
+				break;
+
+				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
+
 				case '/PRIVMSG' : executarComandoPrivmsg(comando, client, clients, canais);
 				break;
 
@@ -127,6 +143,7 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/PING' : executarComandoPing(client);
+
 				break;
 			}
 		}else{

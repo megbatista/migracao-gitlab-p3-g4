@@ -63,6 +63,15 @@
 						$('#mural').append('Pong: '+pong+'<br>');
 					});
 
+					iosocket.on('quit', function(nick) {
+						$('#mural').append(nick + ' saiu do chat.<br>');
+						iosocket.destroy();
+					});
+
+					iosocket.on('invite', function(msg){
+						$('#mural').append(msg.from + ' te convidou para o canal ' + msg.canal + '<br>');
+					});
+
 				});
 				
 				//evento quando a tecla enter e pressionada
