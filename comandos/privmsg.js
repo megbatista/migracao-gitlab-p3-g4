@@ -31,10 +31,6 @@ function Privmsg(param, cl, clients, canais)
                     client.emit('envio-privmsg',cl.nick+': ' + msg);
                     
                 }
-                else
-                {
-                    cl.irc_client.emit('error', 'O nick '+param[1]+' não foi encontrado.');
-                }
             });
         }
 
