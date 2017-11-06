@@ -7,7 +7,7 @@ function Join(client, channel, canais)
     client.canal = channel;
     canais[id] = channel;
     
-    client.irc_client.emit('join', client.canal);
+    client.irc_client.join(client.canal);
     client.broadcast.to(client.canal).emit('join-channel', client.nick);
 
 }

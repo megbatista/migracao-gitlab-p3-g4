@@ -15,6 +15,7 @@ var List = require('./comandos/list');
 var Ping = require('./comandos/ping');
 var Join = require('./comandos/join');
 var PrivmsgChannel = require('./comandos/privmsg-channel');
+var Part = require('./comandos/part');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -148,6 +149,9 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/JOIN' : Join(client, comando[1], canais);
+				break;
+
+				case '/PART' : Part(client, comando);
 				break;
 
 			}
