@@ -11,10 +11,10 @@ function Privmsg(param, cl, clients, canais)
             msg += param[i] + " ";
         }
 
-        //nick não pode começar com #.
-        //filtra no array que armazena os clientes conectados o param[1] e verifica se há correspondências
+        // nick não pode começar com #.
+        // filtra no array que armazena os clientes conectados o param[1] e verifica se há correspondências
         if(param[1][0] != '#' && clients.filter(client => client.nick === param[1]).length)
-        {         
+        {      
           
             //executa essa função para cada cliente, e verifica se cada um tem o nick igual ao informado
             clients.forEach(function(client)
@@ -31,8 +31,29 @@ function Privmsg(param, cl, clients, canais)
                     client.emit('envio-privmsg',cl.nick+': ' + msg);
                     
                 }
+                else
+                {
+                    cl.irc_client.emit('error', 'O nick '+param[1]+' não foi encontrado.');
+                }
             });
         }
+
+        //TENTEATIVA DE TORNAR A PRIVMSG MAIS BONITA
+        
+        // var recipient = clients.filter(function(client)
+        // {
+        //     return client.nick === param[1];
+        // });
+
+        // if(recipient)
+        // {
+        //     recipient.emit('envio-privmsg', cl.nick+': ' + msg);
+        //     cl.irc_client.emit('privmsg', param[1], msg);
+        // }
+        // else
+        // {
+        //     cl.irc_client.emit('error', 'O nick '+param[1]+' não foi encontrado.');
+        // }
 
 
     } 

@@ -36,8 +36,8 @@ var irc_client;
 app.get('/', function (req, res) {
 	
 	//Formato req.cookies: {"nick":"Gustavo","canal":"#sd1","servidor":"ircd","id":"1","io":"JL1ReXHlc7_NLAZiAAAC"}
-	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
-		
+	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) 
+	{		
 		proxy_id++;
 
 		nicks[proxy_id] = req.cookies.nick;
@@ -47,7 +47,9 @@ app.get('/', function (req, res) {
 		res.cookie('id', proxy_id);
 		res.sendFile(path.join(__dirname, '/index.html'));		
 
-	}else {
+	}
+	else 
+	{
 		res.sendFile(path.join(__dirname, '/login.html'));
 	}
 });
@@ -63,7 +65,7 @@ io.on('connection', function (socket) {
 	client.servidor = servidores[proxy_id];
 	client.canal = canais[proxy_id];
 
-	Join(client, client.canal);
+	
 
 	//cria o cliente irc
 	irc_client = new irc.Client(client.servidor, client.nick);
@@ -111,6 +113,8 @@ io.on('connection', function (socket) {
 
 	client.irc_client = irc_client;
 
+	Join(client, client.canal);
+
 	clients[proxy_id] = client;
 
 	//trata as mensagens vindas da interface web(index.html)
@@ -155,8 +159,15 @@ io.on('connection', function (socket) {
 	});
 });
 
-app.post('/login', function (req, res) { 
+app.post('/login', function (req, res) 
+{ 
    res.cookie('nick', req.body.nome);
+
+   if(req.body.canal[0]!='#')
+   {
+		req.body.canal = '#'+req.body.canal;
+   }
+
    res.cookie('canal', req.body.canal);
    res.cookie('servidor', req.body.servidor);
    res.redirect('/');
