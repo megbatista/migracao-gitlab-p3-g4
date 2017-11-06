@@ -1,6 +1,6 @@
 function Join(client, channel)
 {
-    if(channel[0]!='#') return;
+    if(channel[0]!='#') channel = '#'+channel;
     if(client.canal) client.leave(client.canal);
     client.join(channel);
     client.canal = channel;
