@@ -114,6 +114,16 @@ io.on('connection', function (socket) {
 		socket.emit('join', channel);
 	});
 
+	irc_client.addListener('message', function(nick, to, text, msg){
+		console.log('Nick: ' + nick);
+		console.log('to: ' + to);
+		console.log('text: ' + text);
+		console.log('mensagem: ' + msg);
+		var mensagem = '&lt' + nick + '&gt ' + text;
+		console.log(mensagem);
+		socket.emit('message',mensagem);
+	});
+
 	client.irc_client = irc_client;
 
 	Join(client, client.canal, canais, proxy_id);
