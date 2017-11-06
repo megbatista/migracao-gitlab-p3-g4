@@ -119,7 +119,7 @@ io.on('connection', function (socket) {
 
 	client.irc_client = irc_client;
 
-	Join(client, client.canal, canais, proxy_id);
+	Join(client, client.canal, canais);
 
 	clients[proxy_id] = client;
 
@@ -151,8 +151,7 @@ io.on('connection', function (socket) {
 				case '/PING' : Ping(client);
 				break;
 
-				case '/JOIN' : Join(client, comando[1], canais);
-							  
+				case '/JOIN' : Join(client, comando[1], canais);							   
 				break;
 
 			}
@@ -178,8 +177,6 @@ app.post('/login', function (req, res)
 	res.cookie('servidor', req.body.servidor);
 	res.redirect('/');
 });
-
-
 
 server.listen(3000, function () {				
   console.log('Example app listening on port 3000!');	
