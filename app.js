@@ -152,7 +152,7 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/JOIN' : Join(client, comando[1], canais);
-							   Update(client);
+							  
 				break;
 
 			}
@@ -179,12 +179,7 @@ app.post('/login', function (req, res)
 	res.redirect('/');
 });
 
-app.post('/update', function (req, res) 
-{ 
-	res.cookie('nick', req.body.cookiedata.nick);
-	res.cookie('canal', req.body.cookiedata.canal);
-	res.cookie('servidor', req.body.cookiedata.servidor);
-});
+
 
 server.listen(3000, function () {				
   console.log('Example app listening on port 3000!');	
