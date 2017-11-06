@@ -9,12 +9,16 @@ var socketio_cookieParser = require('socket.io-cookie'); //processa cookies do s
 var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
-var executarComandoNick = require('./comandos/nick');
+
+var Nick = require('./comandos/nick');
+var Privmsg = require('./comandos/privmsg');
+var List = require('./comandos/list');
+var Ping = require('./comandos/ping');
+var Join = require('./comandos/join');
+var PrivmsgChannel = require('./comandos/privmsg-channel');
 var executarComandoInvite = require('./comandos/invite');
-var executarComandoPrivmsg = require('./comandos/privmsg');
-var executarComandoList = require('./comandos/list');
-var executarComandoPing = require('./comandos/ping');
 var executarComandoWhois = require('./comandos/whois');
+
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -36,18 +40,22 @@ var irc_client;
 app.get('/', function (req, res) {
 	
 	//Formato req.cookies: {"nick":"Gustavo","canal":"#sd1","servidor":"ircd","id":"1","io":"JL1ReXHlc7_NLAZiAAAC"}
-	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
-		
+	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) 
+	{		
 		proxy_id++;
 
 		nicks[proxy_id] = req.cookies.nick;
 		servidores[proxy_id] = req.cookies.servidor;
 		canais[proxy_id] = req.cookies.canal;
 
+		//console.log('nick: '+req.cookies.nick+' servidor: '+req.cookies.servidor+' canal: '+req.cookies.canal);
+
 		res.cookie('id', proxy_id);
 		res.sendFile(path.join(__dirname, '/index.html'));		
 
-	}else {
+	}
+	else 
+	{
 		res.sendFile(path.join(__dirname, '/login.html'));
 	}
 });
@@ -87,10 +95,16 @@ io.on('connection', function (socket) {
 		'canais':channels });
 	});
 
-	irc_client.addListener('privmsg', function(to,msg)
+	irc_client.addListener('privmsg', function(to)
 	{
-		socket.emit('privmsg',{'to':to, 'msg':msg});
+		socket.emit('privmsg', to);
 	});
+
+	irc_client.addListener('envio-privmsg', function(to)
+	{
+		socket.emit('envio-privmsg', to);
+	});
+
 
 	irc_client.addListener('list', function(channels)
 	{
@@ -102,6 +116,12 @@ io.on('connection', function (socket) {
 		socket.emit('pingpong', pong);
 	});
 
+
+	irc_client.addListener('join', function(channel)
+	{
+		socket.emit('join', channel);
+	});
+	
 	irc_client.addListener('quit', function(nick, reason, channels, message){
 		socket.broadcast.emit('quit', nick);
 		client.disconnect();
@@ -118,6 +138,8 @@ io.on('connection', function (socket) {
 
 	client.irc_client = irc_client;
 
+	Join(client, client.canal, canais);
+
 	clients[proxy_id] = client;
 
 	//trata as mensagens vindas da interface web(index.html)
@@ -125,47 +147,64 @@ io.on('connection', function (socket) {
 
 		console.log(client.nick+': '+ msg);
 				
-		if(msg.charAt(0) == '/'){
+		if(msg.charAt(0) == '/')
+		{
 
 			var comando = msg.split(' ');
-			switch(comando[0].toUpperCase()){
+
+			switch(comando[0].toUpperCase())
+			{
 				
-				case '/NICK': executarComandoNick(comando[1], client);
+				case '/NICK': Nick(comando[1], client);
 				break;
 
 				case '/MOTD': client.irc_client.send('motd');
 				break;
 
+<<<<<<< app.js
+				case '/PRIVMSG' : Privmsg(comando, client, clients, canais);
+				break;
+
+				case '/LIST' : List(client, canais);
+				break;
+=======
 
 				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
 				break;
 
 				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
                 break;
-                
-				case '/PRIVMSG' : executarComandoPrivmsg(comando, client, clients, canais);
+
+				case '/PING' : Ping(client);
 				break;
 
-				case '/LIST' : executarComandoList(client, canais);
+				case '/JOIN' : Join(client, comando[1], canais);							   
 				break;
 
-				case '/PING' : executarComandoPing(client);
-				break;
-				
 				case '/WHOIS': executarComandoWhois(comando[1],client);
 				break;
 			}
-		}else{
-			socket.broadcast.emit('message', socket.nick+': '+msg);
+
+		}
+		else
+		{
+			PrivmsgChannel(msg, client, clients, canais);
 		}
 	});
 });
 
-app.post('/login', function (req, res) { 
-   res.cookie('nick', req.body.nome);
-   res.cookie('canal', req.body.canal);
-   res.cookie('servidor', req.body.servidor);
-   res.redirect('/');
+app.post('/login', function (req, res) 
+{ 
+	res.cookie('nick', req.body.nome);
+
+	if(req.body.canal[0]!='#')
+	{
+			req.body.canal = '#'+req.body.canal;
+	}
+
+	res.cookie('canal', req.body.canal);
+	res.cookie('servidor', req.body.servidor);
+	res.redirect('/');
 });
 
 server.listen(3000, function () {				

@@ -1,6 +1,13 @@
-function executarComandoList(client, canais)
+function List(client, canais)
 {
-    client.irc_client.emit('list', canais.toString());
+    function onlyUnique(value, index, self) 
+    { 
+        return self.indexOf(value) === index;
+    }
+    
+    var unique = canais.filter( onlyUnique );
+
+    client.irc_client.emit('list', unique.toString());
 }
 
-module.exports = executarComandoList;
+module.exports = List;

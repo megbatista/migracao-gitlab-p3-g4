@@ -47,10 +47,10 @@
 						$('mural').append(error+' <br>');
 					});
 					iosocket.on('disconnect', function() {
-						$('#mural').append('Você está desconectado.<br>');
+						$('#mural').append('Você está desconectado <br>');
 					});
-					iosocket.on('privmsg', function(dados) {
-						$('#mural').append('Servidor: mensagem privada para '+ dados.to +': '+dados.msg+ '<br>');
+					iosocket.on('privmsg', function(to) {
+						$('#mural').append('Servidor: mensagem privada para '+ to + ' enviada! <br>');
 					});
 					iosocket.on('envio-privmsg', function(message){
 						var data = new Date();
@@ -62,6 +62,17 @@
 					iosocket.on('pingpong', function(pong){
 						$('#mural').append('Pong: '+pong+'<br>');
 					});
+					iosocket.on('join', function(channel){
+						$('#mural').append('Servidor: Você entrou no canal '+channel+'<br>');
+						$("#status").text("Conectado - irc://"+
+						Cookies.get("nick")+"@"+
+						Cookies.get("servidor")+"/"+
+						channel);	
+					});
+					iosocket.on('join-channel', function(nick){
+						$('#mural').append('Servidor: '+nick+' entrou nesse canal'+'<br>');
+					});
+
 
 					iosocket.on('quit', function(nick) {
 						$('#mural').append(nick + ' saiu do chat.<br>');
@@ -89,7 +100,8 @@
 				});
 				
 				//evento quando a tecla enter e pressionada
-				$('#mensagem').keypress(function(event) {
+				$('#mensagem').keypress(function(event) 
+				{
 					var data = new Date();
 
 					if(event.which == 13) {
@@ -106,7 +118,8 @@
 				});
 
 				//evento quando o botao de enviar e clicado
-				$('#enviar').on('click',function(event){
+				$('#enviar').on('click',function(event)
+				{
 
 					var data = new Date();
 
@@ -136,7 +149,7 @@
 		
 		
 		Mensagem: <input type="text" size="30" id="mensagem"> 
-		<input type="button" value="enviar" id='enviar' >
+		<input type="button" value="enviar" id='enviar'>
 
 		<select id="mode" onchange="trocarMode('mode')">
 			<option value="+i">+i</option>
