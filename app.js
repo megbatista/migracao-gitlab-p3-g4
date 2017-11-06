@@ -44,7 +44,7 @@ app.get('/', function (req, res) {
 		servidores[proxy_id] = req.cookies.servidor;
 		canais[proxy_id] = req.cookies.canal;
 
-		console.log('nick: '+req.cookies.nick+' servidor: '+req.cookies.servidor+' canal: '+req.cookies.canal);
+		//console.log('nick: '+req.cookies.nick+' servidor: '+req.cookies.servidor+' canal: '+req.cookies.canal);
 
 		res.cookie('id', proxy_id);
 		res.sendFile(path.join(__dirname, '/index.html'));		
@@ -147,7 +147,7 @@ io.on('connection', function (socket) {
 				case '/PING' : Ping(client);
 				break;
 
-				case '/JOIN' : Join(client, comando[1], canais, proxy_id);
+				case '/JOIN' : Join(client, comando[1], canais);
 				break;
 
 			}
