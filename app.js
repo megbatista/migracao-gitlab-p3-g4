@@ -52,8 +52,6 @@ app.get('/', function (req, res) {
 //conecta cliente e servidor via websocket
 io.on('connection', function (socket) {
 	
-
-		
 	var client = socket;
 	
 	client.nick = client.request.headers.cookie.nick;  
@@ -136,8 +134,6 @@ io.on('connection', function (socket) {
 
 	client.irc_client = irc_client;
 
-
-
 	//trata as mensagens vindas da interface web(index.html)
 	socket.on('message', function (msg) {
 
@@ -160,7 +156,7 @@ io.on('connection', function (socket) {
 				case '/PRIVMSG' : Privmsg(comando, client);
 				break;
 
-//				case '/LIST' : List(client);
+				case '/LIST' : List(client);
 				break;
 
 				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());

@@ -14,8 +14,7 @@ function Privmsg(param, cl)
         cl.irc_client.say(param[1], msg);
 
         cl.emit('envio-privmsg',cl.nick+': ' + msg);
-                    
-        
+       
     } 
 
 }
