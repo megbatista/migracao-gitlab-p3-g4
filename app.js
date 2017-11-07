@@ -69,8 +69,8 @@ io.on('connection', function (socket) {
 	});
 
 	irc_client.addListener('motd', function(motd){
-		socket.emit('motd', '<pre>'+motd+'</pre>');
-		
+		socket.emit('motd', '<pre>'+motd+'</pre>');		
+		Join(client, client.canal);		
 	});
 
 	irc_client.addListener('error', function(message){
@@ -133,8 +133,6 @@ io.on('connection', function (socket) {
 	});
 
 	client.irc_client = irc_client;
-
-	Join(client, client.canal);
 
 	//trata as mensagens vindas da interface web(index.html)
 	socket.on('message', function (msg) {

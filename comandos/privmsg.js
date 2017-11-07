@@ -12,11 +12,12 @@ function Privmsg(param, cl)
             {
                  msg += param[i] + " ";
             }
-        }     
+        } 
 
-        cl.irc_client.say(param[1], msg);
+        cl.irc_client.say(param[1], cl.nick+' (Privado): '+ msg);
+
         cl.emit('privmsg',param[1]);
-        cl.emit('envio-privmsg',cl.nick+': ' + msg);
+        //cl.emit('envio-privmsg',cl.nick+': ' + msg);
        
     } 
 
