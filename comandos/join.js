@@ -1,6 +1,6 @@
 function Join(client, channel, canais)
 {
-    if(channel[0]!='#') channel = '#'+channel;
+    if(channel && channel[0]!='#') channel = '#'+channel;
     if(client.canal) client.leave(client.canal);
     client.join(channel);
     client.irc_client.join(client.canal);

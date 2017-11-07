@@ -34,7 +34,9 @@
 						$("#status").text("Conectado - irc://"+
 						dados.novonick+"@"+
 						Cookies.get("servidor")+"/"+
-						Cookies.get("canal"));						
+						Cookies.get("canal"));
+
+						$.post("/login", {"nome":dados.novonick}, function(retorno){}, "html");						
 					});
 					
 					iosocket.on('motd', function(motd){

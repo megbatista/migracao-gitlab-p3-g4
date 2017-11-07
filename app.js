@@ -161,13 +161,11 @@ io.on('connection', function (socket) {
 				case '/MOTD': client.irc_client.send('motd');
 				break;
 
-<<<<<<< app.js
 				case '/PRIVMSG' : Privmsg(comando, client, clients, canais);
 				break;
 
 				case '/LIST' : List(client, canais);
 				break;
-=======
 
 				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
 				break;
@@ -197,7 +195,7 @@ app.post('/login', function (req, res)
 { 
 	res.cookie('nick', req.body.nome);
 
-	if(req.body.canal[0]!='#')
+	if(req.body.canal && req.body.canal[0]!='#')
 	{
 			req.body.canal = '#'+req.body.canal;
 	}
