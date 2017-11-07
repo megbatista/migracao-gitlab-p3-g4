@@ -53,13 +53,12 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	
 
-	proxies[proxy_id] = socket;
-	
+		
 	var client = socket;
 	
-	client.nick =  nicks[proxy_id];
-	client.servidor = servidores[proxy_id];
-	client.canal = canais[proxy_id];
+	client.nick = client.request.headers.cookie.nick;  
+	client.servidor = client.request.headers.cookie.servidor;
+	client.canal = client.request.headers.cookie.canal;
 
 	//cria o cliente irc
 	var irc_client = new irc.Client(client.servidor, client.nick);
@@ -73,7 +72,7 @@ io.on('connection', function (socket) {
 
 	irc_client.addListener('motd', function(motd){
 		socket.emit('motd', '<pre>'+motd+'</pre>');
-		Join(client, client.canal, proxy_id);
+		Join(client, client.canal);
 	});
 
 	irc_client.addListener('error', function(message){
@@ -136,9 +135,6 @@ io.on('connection', function (socket) {
 	});
 
 	client.irc_client = irc_client;
-
-
-	Join(client, client.canal, canais);
 
 
 

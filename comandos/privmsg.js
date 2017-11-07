@@ -1,4 +1,4 @@
-function Privmsg(param, cl, clients, canais)
+function Privmsg(param, cl)
 {
     //param[1] é o nick para o qual a mensagem será enviada
     if(param[1])
@@ -13,7 +13,7 @@ function Privmsg(param, cl, clients, canais)
 
         cl.irc_client.say(param[1], msg);
 
-        client.emit('envio-privmsg',cl.nick+': ' + msg);
+        cl.emit('envio-privmsg',cl.nick+': ' + msg);
                     
         
     } 
