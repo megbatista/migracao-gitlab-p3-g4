@@ -31,12 +31,13 @@
 
 					iosocket.on('nick', function(dados){
 						$('#mural').append('Servidor: você mudou o seu nick para \''+dados.novonick+'\'!<br>');
-						$("#status").text("Conectado - irc://"+
-						dados.novonick+"@"+
-						Cookies.get("servidor")+"/"+
-						Cookies.get("canal"));
 
-						$.post("/login", {"nome":dados.novonick}, function(retorno){}, "html");						
+						var canal = Cookies.get("canal");
+						var servidor = Cookies.get("servidor");
+
+						$("#status").text("Conectado - irc://"+	dados.novonick+"@"+	servidor+"/"+canal);
+
+						$.post("/login", {"nome":dados.novonick, "canal":canal, "servidor":servidor}, function(retorno){},"html");						
 					});
 					
 					iosocket.on('motd', function(motd){
@@ -66,10 +67,13 @@
 					});
 					iosocket.on('join', function(channel){
 						$('#mural').append('Servidor: Você entrou no canal '+channel+'<br>');
-						$("#status").text("Conectado - irc://"+
-						Cookies.get("nick")+"@"+
-						Cookies.get("servidor")+"/"+
-						channel);	
+						
+						var nick = Cookies.get("nick");
+						var servidor = Cookies.get("servidor");
+
+						$("#status").text("Conectado - irc://"+nick+"@"+servidor+"/"+channel);
+
+						$.post("/login", {"nome":nick, "canal":channel, "servidor":servidor}, function(retorno){}, "html");		
 					});
 					iosocket.on('join-channel', function(nick){
 						$('#mural').append('Servidor: '+nick+' entrou nesse canal'+'<br>');
