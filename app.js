@@ -9,6 +9,7 @@ var socketio_cookieParser = require('socket.io-cookie'); //processa cookies do s
 var path = require('path');	// módulo usado para lidar com caminhos de arquivos
 
 //comandos
+
 var Nick = require('./comandos/nick');
 var Privmsg = require('./comandos/privmsg');
 var List = require('./comandos/list');
@@ -16,6 +17,8 @@ var Ping = require('./comandos/ping');
 var Join = require('./comandos/join');
 var PrivmsgChannel = require('./comandos/privmsg-channel');
 //var Part = require('./comandos/part');
+var executarComandoInvite = require('./comandos/invite');
+var executarComandoWhois = require('./comandos/whois');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -49,13 +52,14 @@ app.get('/', function (req, res) {
 //conecta cliente e servidor via websocket
 io.on('connection', function (socket) {
 	
-	var client = socket;
 
-	client.nick =  socket.request.headers.cookie.nick;
-	client.servidor = socket.request.headers.cookie.servidor;
-	client.canal = socket.request.headers.cookie.canal;
-
+	proxies[proxy_id] = socket;
 	
+	var client = socket;
+	
+	client.nick =  nicks[proxy_id];
+	client.servidor = servidores[proxy_id];
+	client.canal = canais[proxy_id];
 
 	//cria o cliente irc
 	var irc_client = new irc.Client(client.servidor, client.nick);
@@ -87,6 +91,12 @@ io.on('connection', function (socket) {
 		socket.emit('privmsg', to);
 	});
 
+	irc_client.addListener('envio-privmsg', function(to)
+	{
+		socket.emit('envio-privmsg', to);
+	});
+
+
 	irc_client.addListener('list', function(channels)
 	{
 		socket.emit('list', channels);
@@ -97,9 +107,24 @@ io.on('connection', function (socket) {
 		socket.emit('pingpong', pong);
 	});
 
+
 	irc_client.addListener('join', function(channel)
 	{
 		socket.emit('join', channel);
+	});
+	
+	irc_client.addListener('quit', function(nick, reason, channels, message){
+		socket.broadcast.emit('quit', nick);
+		client.disconnect();
+	});
+
+	irc_client.addListener('invite', function(channel, from, message) {
+		socket.emit('invite', {'canal': channel, 'from': from, 'msg': message});
+	});
+	
+	irc_client.addListener('whois', function(info)
+	{
+		socket.emit('whois', info);
 	});
 
 	irc_client.addListener('message', function(nick, to, text, msg){
@@ -112,6 +137,8 @@ io.on('connection', function (socket) {
 
 	client.irc_client = irc_client;
 
+
+	Join(client, client.canal, canais);
 
 
 
@@ -140,14 +167,24 @@ io.on('connection', function (socket) {
 //				case '/LIST' : List(client);
 				break;
 
+				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
+				break;
+
+				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
+                break;
+
 				case '/PING' : Ping(client);
 				break;
+
 
 				case '/JOIN' : Join(client, comando[1]);
 				break;
 
 //				case '/PART' : Part(client, comando);
 //				break;
+
+				case '/WHOIS': executarComandoWhois(comando[1],client);
+				break;
 
 			}
 
@@ -161,16 +198,16 @@ io.on('connection', function (socket) {
 
 app.post('/login', function (req, res) 
 { 
-   res.cookie('nick', req.body.nome);
+	res.cookie('nick', req.body.nome);
 
-   if(req.body.canal[0]!='#')
-   {
-		req.body.canal = '#'+req.body.canal;
-   }
+	if(req.body.canal && req.body.canal[0]!='#')
+	{
+			req.body.canal = '#'+req.body.canal;
+	}
 
-   res.cookie('canal', req.body.canal);
-   res.cookie('servidor', req.body.servidor);
-   res.redirect('/');
+	res.cookie('canal', req.body.canal);
+	res.cookie('servidor', req.body.servidor);
+	res.redirect('/');
 });
 
 server.listen(3000, function () {				

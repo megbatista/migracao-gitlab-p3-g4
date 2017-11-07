@@ -21,14 +21,18 @@ function iniciar(elemento_id) {
 
 var novo_timestamp="0";
 
-function trocarMode(elemento){
+function trocarMode(elemento)
+{
 
 	var usuario = Cookies.get("nick");
 	var args = $("#"+elemento).val();
 	var comando = "mode/"+usuario+"/"+args;
-	$.get(comando, function(data,status) {
+	$.get(comando, function(data,status) 
+	{
 		if ( status == "success" ) {		    
 			alert(comando);
 		}
 	});
+
 }
+

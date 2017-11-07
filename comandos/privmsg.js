@@ -2,7 +2,7 @@ function Privmsg(param, cl, clients, canais)
 {
     //param[1] é o nick para o qual a mensagem será enviada
     if(param[1])
-    {  
+    { 
 
         var msg = "";
 

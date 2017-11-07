@@ -34,7 +34,9 @@
 						$("#status").text("Conectado - irc://"+
 						dados.novonick+"@"+
 						Cookies.get("servidor")+"/"+
-						Cookies.get("canal"));						
+						Cookies.get("canal"));
+
+						$.post("/login", {"nome":dados.novonick}, function(retorno){}, "html");						
 					});
 					
 					iosocket.on('motd', function(motd){
@@ -73,6 +75,29 @@
 						$('#mural').append('Servidor: '+nick+' entrou nesse canal'+'<br>');
 					});
 
+
+					iosocket.on('quit', function(nick) {
+						$('#mural').append(nick + ' saiu do chat.<br>');
+						iosocket.destroy();
+					});
+
+					iosocket.on('invite', function(msg){
+						$('#mural').append(msg.from + ' te convidou para o canal ' + msg.canal + '<br>');
+					});
+					
+					iosocket.on('whois',function(info){
+						
+						msg =(  "nick: "+info.nick+'<br>'+
+								"user: "+info.user+'<br>'+
+								"host: "+info.host+'<br>'+
+								"realname: "+info.realname+'<br>'+
+								"channels: "+info.channels+'<br>'+
+								"server: "+info.server+'<br>'+
+								"serverinfo: "+info.serverinfo+'<br>'+
+								"operator: "+info.operator+'<br>');
+						
+						$('#mural').append(msg.toString()+'<br>');
+					});
 
 				});
 				
@@ -126,7 +151,7 @@
 		
 		
 		Mensagem: <input type="text" size="30" id="mensagem"> 
-		<input type="button" value="enviar" id='enviar' >
+		<input type="button" value="enviar" id='enviar'>
 
 		<select id="mode" onchange="trocarMode('mode')">
 			<option value="+i">+i</option>
