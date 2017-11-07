@@ -5,6 +5,7 @@ function Nick(param, client)
 		var oldnick = client.nick;
 		client.nick = param;
 		client.irc_client.send('NICK', client.nick);
+		client.irc_client.emit('nick', oldnick, client.nick, client.canal);
 		client.broadcast.emit('mudanca-de-nick', oldnick+' mudou seu nick para '+client.nick)
 	}
 }

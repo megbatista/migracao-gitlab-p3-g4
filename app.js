@@ -17,8 +17,8 @@ var Ping = require('./comandos/ping');
 var Join = require('./comandos/join');
 var PrivmsgChannel = require('./comandos/privmsg-channel');
 //var Part = require('./comandos/part');
-var executarComandoInvite = require('./comandos/invite');
-var executarComandoWhois = require('./comandos/whois');
+var Invite = require('./comandos/invite');
+var Whois = require('./comandos/whois');
 
 io.use(socketio_cookieParser); //usa esse processador de cookies dentro do socketio
 //configuranco dos middlewares do express
@@ -66,12 +66,12 @@ io.on('connection', function (socket) {
 	//e a resposta sera repassada deste servidor para o index.html onde tem outros
 	//eventos com o mesmo nome preparados para trata-los
 	irc_client.addListener('registered', function(message){
-		socket.emit('registrado', "Voce esta registrado no irc");
+		socket.emit('registrado', "Voce está registrado no irc");
+		Join(client, client.canal);	
 	});
 
 	irc_client.addListener('motd', function(motd){
-		socket.emit('motd', '<pre>'+motd+'</pre>');
-		Join(client, client.canal);
+		socket.emit('motd', '<pre>'+motd+'</pre>');			
 	});
 
 	irc_client.addListener('error', function(message){
@@ -84,16 +84,15 @@ io.on('connection', function (socket) {
 		'canais':channels });
 	});
 
-	irc_client.addListener('privmsg', function(to)
+	// irc_client.addListener('pm', function (nick, text, message) 
+	// {
+	// 	socket.emit('envio-privmsg', text);
+	// });
+
+	irc_client.addListener('selfMessage', function(to, text)
 	{
 		socket.emit('privmsg', to);
 	});
-
-	irc_client.addListener('envio-privmsg', function(to)
-	{
-		socket.emit('envio-privmsg', to);
-	});
-
 
 	irc_client.addListener('list', function(channels)
 	{
@@ -163,8 +162,8 @@ io.on('connection', function (socket) {
 				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
 				break;
 
-				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
-            break;
+				case '/INVITE': Invite(comando[1], comando[2], client.nick, clients);
+                break;
 
 				case '/PING' : Ping(client);
 				break;
@@ -176,7 +175,7 @@ io.on('connection', function (socket) {
 //				case '/PART' : Part(client, comando);
 //				break;
 
-				case '/WHOIS': executarComandoWhois(comando[1],client);
+				case '/WHOIS': Whois(comando[1],client);
 				break;
 
 			}
