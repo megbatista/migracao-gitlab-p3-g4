@@ -83,10 +83,10 @@ io.on('connection', function (socket) {
 		'canais':channels });
 	});
 
-	irc_client.addListener('pm', function (nick, text, message) 
-	{
-		socket.emit('envio-privmsg', text);
-	});
+	// irc_client.addListener('pm', function (nick, text, message) 
+	// {
+	// 	socket.emit('envio-privmsg', text);
+	// });
 
 	irc_client.addListener('selfMessage', function(to, text)
 	{
