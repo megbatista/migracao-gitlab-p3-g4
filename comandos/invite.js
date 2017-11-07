@@ -1,4 +1,4 @@
-function executarComandoInvite(para, canal, from, clients) {
+function Invite(para, canal, from, clients) {
 	// comando para enviar convites a determinado usuario para
 	//	entrar em algum canal
 	var msg = ' ';	
@@ -9,4 +9,4 @@ function executarComandoInvite(para, canal, from, clients) {
 	});
 }
 
-module.exports = executarComandoInvite;
+module.exports = Invite;

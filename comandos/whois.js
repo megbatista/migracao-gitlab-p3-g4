@@ -1,4 +1,4 @@
-function executarComandoWhois(param, client){
+function Whois(param, client){
     
     if(param){
 
@@ -6,4 +6,4 @@ function executarComandoWhois(param, client){
 	}
 }
 
-module.exports = executarComandoWhois;
+module.exports = Whois;
