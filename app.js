@@ -29,6 +29,7 @@ app.use(express.static('public'));
 
 
 var proxy_id = 0;
+var clients = [];
 
 //O sistema inicia aqui, quando fazemos a requisicao para localhost:3000
 app.get('/', function (req, res) {
@@ -133,7 +134,7 @@ io.on('connection', function (socket) {
 	});
 
 	client.irc_client = irc_client;
-
+	clients[proxy_id] = client;
 	//trata as mensagens vindas da interface web(index.html)
 	socket.on('message', function (msg) {
 
@@ -163,7 +164,7 @@ io.on('connection', function (socket) {
 				break;
 
 				case '/INVITE': executarComandoInvite(comando[1], comando[2], client.nick, clients);
-                break;
+            break;
 
 				case '/PING' : Ping(client);
 				break;
