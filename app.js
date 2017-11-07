@@ -65,12 +65,12 @@ io.on('connection', function (socket) {
 	//e a resposta sera repassada deste servidor para o index.html onde tem outros
 	//eventos com o mesmo nome preparados para trata-los
 	irc_client.addListener('registered', function(message){
-		socket.emit('registrado', "Voce esta registrado no irc");
+		socket.emit('registrado', "Voce está registrado no irc");
+		Join(client, client.canal);	
 	});
 
 	irc_client.addListener('motd', function(motd){
-		socket.emit('motd', '<pre>'+motd+'</pre>');		
-		Join(client, client.canal);		
+		socket.emit('motd', '<pre>'+motd+'</pre>');			
 	});
 
 	irc_client.addListener('error', function(message){
