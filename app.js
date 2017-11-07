@@ -85,7 +85,6 @@ io.on('connection', function (socket) {
 
 	irc_client.addListener('pm', function (nick, text, message) 
 	{
-		console.log(">>>>>>>>>>>>>>>>>>>>>>");
 		socket.emit('envio-privmsg', text);
 	});
 
