@@ -3,7 +3,6 @@ function Privmsg(param, cl)
     //param[1] é o nick para o qual a mensagem será enviada
     if(param[1])
     {
-
         var msg = "";
 
         if(param[2])
@@ -14,11 +13,11 @@ function Privmsg(param, cl)
             }
         } 
 
-        cl.irc_client.say(param[1], cl.nick+' (Privado): '+ msg);
+        //só funciona se estiver registrado no irc
 
-        cl.emit('privmsg',param[1]);
-        //cl.emit('envio-privmsg',cl.nick+': ' + msg);
-       
+        cl.irc_client.say(param[1],'(Privado) '+cl.nick+': '+ msg);
+
+        cl.emit('selfMessage',param[1], msg);     
     } 
 
 }

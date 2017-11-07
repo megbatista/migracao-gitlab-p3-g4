@@ -57,7 +57,7 @@
 					});
 					iosocket.on('envio-privmsg', function(message){
 						var data = new Date();
-						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] (Privado) '+message+'<br>');
+						$('#mural').append('['+data.getHours()+':'+data.getMinutes()+':'+data.getSeconds()+'] '+message+'<br>');
 					});
 					iosocket.on('list', function(list){
 						$('#mural').append('Canais disponíveis: '+list+'<br>');
