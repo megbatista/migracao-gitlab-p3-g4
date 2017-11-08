@@ -75,7 +75,7 @@ io.on('connection', function (socket) {
 	});
 
 	irc_client.addListener('error', function(message){
-		socket.emit('erro', 'Um erro ocorreu: '+message);
+		socket.emit('erro', message.args[2]);
 	});
 
 	irc_client.addListener('nick', function(oldnick, newnick, channels){
@@ -162,7 +162,7 @@ io.on('connection', function (socket) {
 				case '/QUIT': client.irc_client.emit('quit', client.nick, msg, client.canal.toString());
 				break;
 
-				case '/INVITE': Invite(comando[1], comando[2], client.nick, clients);
+				case '/INVITE': Invite(comando[1], comando[2], client, clients);
                 break;
 
 				case '/PING' : Ping(client);
@@ -177,7 +177,8 @@ io.on('connection', function (socket) {
 
 				case '/WHOIS': Whois(comando[1],client);
 				break;
-
+				
+				default: client.emit('erro', 'Comando inexistente.');
 			}
 
 		}

@@ -47,7 +47,8 @@
 						$('#mural').append(data+' <br>');					
 					});
 					iosocket.on('erro', function(error){
-						$('mural').append(error+' <br>');
+						$('#mural').append(''+error+' <br>');
+						console.log(JSON.stringify(error));
 					});
 					iosocket.on('disconnect', function() {
 						$('#mural').append('Você está desconectado <br>');
