@@ -1,4 +1,4 @@
-# Projeto 2 -Protótipo de cliente web para servidor IRC da disciplina de Aplicações/Sistemas Distribuídos.
+# Projeto 3 -Sistema de Troca de Mensagens Multiprotocolo usando RabbitMQ.
 
 ## Membros
 
@@ -17,7 +17,7 @@
 
 A documentação pode ser encontrada nas páginas wiki deste projeto 2 no gitlab ou também pelo link:
 
-[https://gitlab.com/sd1-ec-2017-2/p2-g4/wikis/home](https://gitlab.com/sd1-ec-2017-2/p2-g4/wikis/home)
+[https://gitlab.com/sd1-ec-2017-2/p2-g4/wikis/home](https://gitlab.com/sd1-ec-2017-2/p3-g4/wikis/home)
 
 
 
