@@ -55,7 +55,6 @@ function inicializar() {
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
 		
-		console.log(">>>>>>>>>>>"+msg.nick+": "+msg.canal+" - "+msg.msg);
 		irc_clients[msg.id].say(msg.canal, msg.msg);
 	});
 }

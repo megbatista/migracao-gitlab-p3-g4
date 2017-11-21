@@ -59,7 +59,7 @@ function receberDoServidor (id, callback) {
 	amqp_ch.consume("user_"+id, function(msg) {
 		
 		console.log(" [app] ID "+id+" Received "+msg.content.toString());
-		callback(JSON.parse(msg.content.toString()));
+		callback(id, JSON.parse(msg.content.toString()));
 		
 	}, {noAck: true});
 }
@@ -82,10 +82,10 @@ app.get('/', function (req, res) {
 	   
 	   var target = 'registro_conexao';
 	   var msg = {
-		   id: id, 
-	   servidor: req.cookies.servidor,
-	   nick: req.cookies.nick, 
-	   canal: req.cookies.canal
+		id: id, 
+		servidor: req.cookies.servidor,
+		nick: req.cookies.nick, 
+		canal: req.cookies.canal
 	   };
 	   
 	   users[id].id       = msg.id;
@@ -97,12 +97,11 @@ app.get('/', function (req, res) {
 	   enviarParaServidor(target, msg);
 	   
 	   // Se inscreve para receber mensagens endereçadas a este usuário
-	   receberDoServidor(id, function (msg) {
+	   receberDoServidor(id, function (id_real, msg) {
 		   
 		   //Adiciona mensagem ao cache do usuário
-		   //PROBLEMA É AQUI! o id que vem aqui é sempre o último a ser conectado!
-		   console.log("Colocando mensagem no cache do usuário "+id+"...");
-		   users[id].cache.push(msg);
+		   console.log("Mensagem colocada no cache do usuário "+users[id_real].nick);
+		   users[id_real].cache.push(msg);
 	   });
 	   
 	   res.sendFile(path.join(__dirname, '/index.html'));
