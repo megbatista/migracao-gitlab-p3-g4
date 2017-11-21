@@ -1,20 +1,44 @@
 <html>
 <head>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-	<script src="js/functions.js" type="text/javascript"></script>
-	<script src="js/js.cookie.js" type="text/javascript"></script>
-	<title>bate-papo ajax</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="js/functions.js" type="text/javascript"></script>
+<script src="js/js.cookie.js" type="text/javascript"></script>
+<title>bate-papo</title>
+<script>
+
+$(function(){
+	
+	//evento quando a tecla enter é pressionada
+	$('#mensagem').keypress(function(event) 
+	{
+		
+		//primeiro a mensagem vai ser enviada por aqui, pro submete_mensagem do functions.js
+		if(event.which == 13) 
+		{						
+			event.preventDefault(); 
+			submete_mensagem('mensagem');						
+			$('#mensagem').val('');
+		}
+	});
+	
+	$('#enviar').on('click',function(event)
+	{
+		submete_mensagem('mensagem');
+		$('#mensagem').val('');
+	});
+});
+
+</script>
 </head>
 <body onload="iniciar('mural')">
 <div style="width:700px; height:400px; overflow: auto;" id="mural"></div>
 <br/>
 <div id="status"></div><br/>
 Mensagem: <input type="text" size="30" id="mensagem"> 
-<input type="button" value="enviar" onclick="submete_mensagem('mensagem')">
- <select id="mode" onchange="trocarMode('mode')">
-  <option value="+i">+i</option>
-  <option value="-i">-i</option>
+<input type="button" value="enviar">
+<select id="mode" onchange="trocarMode('mode')">
+<option value="+i">+i</option>
+<option value="-i">-i</option>
 </select> 
-
 </body>
 </html>
