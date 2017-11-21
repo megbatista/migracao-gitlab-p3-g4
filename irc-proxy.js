@@ -35,9 +35,9 @@ function inicializar() {
 			{channels: [canal]}
 		);		
 		
-		irc_clients[id].addListener('message'+canal, function (from, message) {
+		irc_clients[id].addListener('message'+to, function (from, message) {
 			
-			console.log(from + ' => '+ canal +': ' + message);
+			console.log(from + ' => '+ to +': ' + message);
 			
 			enviarParaCliente(id, {
 				"timestamp": Date.now(), 

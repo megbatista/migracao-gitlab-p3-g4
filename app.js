@@ -129,10 +129,21 @@ app.post('/gravar_mensagem', function (req, res) {
 	// Adiciona mensagem enviada ao cache do usuário
 	users[req.cookies.id].cache.push(req.body);
 	
+	var comando = "";
+	
+	if(req.body.msg.charAt(0) == '/')
+	{
+		comando = msg.split(' ');
+		comando = comando(0).toUpperCase();
+		req.body.msg = req.body.msg - comando;
+		
+	}
+	
 	enviarParaServidor("gravar_mensagem", {
 		id: req.cookies.id,
 		nick: users[req.cookies.id].nick,
 		canal: users[req.cookies.id].canal, 
+		comando: comando,
 		msg: req.body.msg
 	});
 	
