@@ -18,6 +18,8 @@ amqp.connect('amqp://localhost', function(err, conn) {
 	});
 });
 
+var servidor;
+
 function inicializar() {
 	
 	receberDoCliente("registro_conexao", function (msg) {
@@ -25,10 +27,10 @@ function inicializar() {
 		console.log('irc-proxy.js: recebeu registro de conexão');
 		
 		var id       = msg.id;
-		var servidor = msg.servidor;
+		servidor     = msg.servidor;
 		var nick     = msg.nick;
 		var canal    = msg.canal;
-		
+
 		irc_clients[id] = new irc.Client(
 			servidor, 
 			nick,
@@ -49,14 +51,48 @@ function inicializar() {
 		irc_clients[id].addListener('error', function(message) {
 			console.log('error: ', message);
 		});
-		
+
+		irc_clients[id].addListener('motd', function(motd) {
+			message = new Buffer(motd);
+			amqp_ch.assertQueue("motd_", {durable: false});
+			amqp_ch.sendToQueue("motd_", message);
+		});
+
+		irc_clients[id].addListener('ping', function(pong) {
+			var msg = new Buffer(JSON.stringify(pong));
+			amqp_ch.assertQueue("ping_", {durable: false});
+			amqp_ch.sendToQueue("ping_", msg);
+		});
+
 		proxies[id] = irc_clients[id];
 	});
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
 		
 		irc_clients[msg.id].say(msg.canal, msg.msg);
+		
+		var mensagem = msg.msg;
+		if(mensagem.charAt(0) == '/')
+		{
+
+			var comando = mensagem.split(' ');
+			
+			switch(comando[0].toUpperCase())
+			{	
+				case '/MOTD':
+					irc_clients[msg.id].send('motd');
+				break;
+
+				case '/PING':
+					irc_clients[msg.id].emit('ping', servidor);
+				break;
+			}
+
+		}
+
+
 	});
+
 }
 
 function receberDoCliente (canal, callback) {

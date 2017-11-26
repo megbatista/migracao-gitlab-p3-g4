@@ -62,6 +62,24 @@ function receberDoServidor (id, callback) {
 		callback(id, JSON.parse(msg.content.toString()));
 		
 	}, {noAck: true});
+
+	// cria uma fila para o motd
+	amqp_ch.assertQueue("motd_", {durable: false});
+	// consome a fila
+	amqp_ch.consume("motd_", function(message){
+		motd = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": '<pre>'+motd+'</pre>'});
+	}, {noAck:true});
+
+	// fila do ping
+	amqp_ch.assertQueue("ping_", {durable: false});
+	amqp_ch.consume("ping_", function(message){
+		var msg = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": "pong: " + msg});
+	}, {noAck:true});
+	
 }
 
 // Faz o registro de conexão com o servidor IRC
@@ -125,7 +143,7 @@ app.get('/obter_mensagem/:timestamp', function (req, res) {
 
 // Envia uma mensagem para o servidor IRC
 app.post('/gravar_mensagem', function (req, res) {
-	
+
 	// Adiciona mensagem enviada ao cache do usuário
 	users[req.cookies.id].cache.push(req.body);
 	
@@ -135,7 +153,7 @@ app.post('/gravar_mensagem', function (req, res) {
 		canal: users[req.cookies.id].canal, 
 		msg: req.body.msg
 	});
-	
+
 	res.end();
 });
 
