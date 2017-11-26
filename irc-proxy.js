@@ -29,11 +29,12 @@ function inicializar() {
 		var nick     = msg.nick;
 		var canal    = msg.canal;
 		
-		irc_clients[id] = new irc.Client(
-			servidor, 
-			nick,
-			{channels: [canal]}
-		);		
+		irc_clients[id] = new irc.Client(servidor, nick);
+
+
+		irc_clients[id].addListener('registered', function(message){
+			enviarParaCliente(id, message);
+		});		
 		
 		irc_clients[id].addListener('message'+canal, function (from, message) {
 			
@@ -41,8 +42,8 @@ function inicializar() {
 			
 			enviarParaCliente(id, {
 				"timestamp": Date.now(), 
-						   "nick": from,
-				 "msg": message
+				"nick": from,
+				"msg": message
 			});
 		});
 		
@@ -54,18 +55,18 @@ function inicializar() {
 	});
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
-		
-		irc_clients[msg.id].say(msg.canal, msg.msg);
+		console.log('A mensagem recebida no irc-proxy foi: '+ msg);
+		//irc_clients[msg.id].say(msg.canal, msg);
 	});
 }
 
-function receberDoCliente (canal, callback) {
+function receberDoCliente (fila, callback) {
 	
-	amqp_ch.assertQueue(canal, {durable: false});
+	amqp_ch.assertQueue(fila, {durable: false});
 	
-	console.log(" [irc] Waiting for messages in "+canal);
+	console.log(" [irc] Waiting for messages in "+fila);
 	
-	amqp_ch.consume(canal, function(msg) {
+	amqp_ch.consume(fila, function(msg) {
 		
 		console.log(" [irc] Received %s", msg.content.toString());
 		callback(JSON.parse(msg.content.toString()));

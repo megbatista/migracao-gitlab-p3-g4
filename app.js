@@ -40,16 +40,17 @@ app.post('/login', function (req, res) {
 	res.redirect('/');
 });
 
-function enviarParaServidor (comando, msg) {
+function enviarParaServidor (fila, msg) {
 	
 	msg = new Buffer(JSON.stringify(msg));
 	
-	amqp_ch.assertQueue(comando, {durable: false});
-	amqp_ch.sendToQueue(comando, msg);
+	amqp_ch.assertQueue(fila, {durable: false});
+	amqp_ch.sendToQueue(fila, msg);
 	console.log(" [app] Sent %s", msg);
 	
 }
 
+//se inscreve na fila user_<id> para receber mensagens que sao armazenadas no cache
 function receberDoServidor (id, callback) {
 	
 	amqp_ch.assertQueue("user_"+id, {durable: false});
@@ -87,7 +88,7 @@ app.get('/', function (req, res) {
 		nick: req.cookies.nick, 
 		canal: req.cookies.canal
 	   };
-	   
+	   //armazenando as informacoes do usuario no seu cache
 	   users[id].id       = msg.id;
 	   users[id].servidor = msg.servidor;
 	   users[id].nick     = msg.nick;
@@ -117,7 +118,7 @@ app.get('/obter_mensagem/:timestamp', function (req, res) {
 	
 	var id = req.cookies.id;
 	var response = users[id].cache;
-	users.cache = [];
+	users[id].cache = [];
 	
 	res.append('Content-type', 'application/json');
 	res.send(response);
