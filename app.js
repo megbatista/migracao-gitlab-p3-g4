@@ -71,6 +71,14 @@ function receberDoServidor (id, callback) {
 		users[id].cache.push({"timestamp": Date.now(), 
 	   "nick": "IRC Server", "msg": '<pre>'+motd+'</pre>'});
 	}, {noAck:true});
+
+	// fila do ping
+	amqp_ch.assertQueue("ping_", {durable: false});
+	amqp_ch.consume("ping_", function(message){
+		var msg = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": "pong: " + msg});
+	}, {noAck:true});
 	
 }
 
