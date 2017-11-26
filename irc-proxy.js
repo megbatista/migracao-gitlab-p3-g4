@@ -28,7 +28,7 @@ function inicializar() {
 		var servidor = msg.servidor;
 		var nick     = msg.nick;
 		var canal    = msg.canal;
-		
+
 		irc_clients[id] = new irc.Client(
 			servidor, 
 			nick,
@@ -49,14 +49,40 @@ function inicializar() {
 		irc_clients[id].addListener('error', function(message) {
 			console.log('error: ', message);
 		});
-		
+
+		irc_clients[id].addListener('motd', function(motd) {
+			message = new Buffer(motd);
+			amqp_ch.assertQueue("motd_", {durable: false});
+			amqp_ch.sendToQueue("motd_", message);
+		});
+
 		proxies[id] = irc_clients[id];
 	});
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
 		
 		irc_clients[msg.id].say(msg.canal, msg.msg);
+		
+		var mensagem = msg.msg;
+		
+		if(mensagem.charAt(0) == '/')
+		{
+
+			var comando = mensagem.split(' ');
+			
+			switch(comando[0].toUpperCase())
+			{	
+				case '/MOTD':
+				irc_clients[msg.id].send('motd');
+				break;
+				
+			}
+
+		}
+
+
 	});
+
 }
 
 function receberDoCliente (canal, callback) {
