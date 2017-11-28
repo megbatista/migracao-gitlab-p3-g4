@@ -64,17 +64,17 @@ function receberDoServidor (id, callback) {
 	}, {noAck: true});
 
 	// cria uma fila para o motd
-	amqp_ch.assertQueue("motd_", {durable: false});
+	amqp_ch.assertQueue("motd_"+id, {durable: false});
 	// consome a fila
-	amqp_ch.consume("motd_", function(message){
+	amqp_ch.consume("motd_"+id, function(message){
 		motd = message.content.toString();
 		users[id].cache.push({"timestamp": Date.now(), 
 	   "nick": "IRC Server", "msg": '<pre>'+motd+'</pre>'});
 	}, {noAck:true});
 
 	// fila do ping
-	amqp_ch.assertQueue("ping_", {durable: false});
-	amqp_ch.consume("ping_", function(message){
+	amqp_ch.assertQueue("ping_"+id, {durable: false});
+	amqp_ch.consume("ping_"+id, function(message){
 		var msg = message.content.toString();
 		users[id].cache.push({"timestamp": Date.now(), 
 	   "nick": "IRC Server", "msg": "pong: " + msg});

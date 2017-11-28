@@ -54,14 +54,14 @@ function inicializar() {
 
 		irc_clients[id].addListener('motd', function(motd) {
 			message = new Buffer(motd);
-			amqp_ch.assertQueue("motd_", {durable: false});
-			amqp_ch.sendToQueue("motd_", message);
+			amqp_ch.assertQueue("motd_"+id, {durable: false});
+			amqp_ch.sendToQueue("motd_"+id, message);
 		});
 
 		irc_clients[id].addListener('ping', function(pong) {
 			var msg = new Buffer(JSON.stringify(pong));
-			amqp_ch.assertQueue("ping_", {durable: false});
-			amqp_ch.sendToQueue("ping_", msg);
+			amqp_ch.assertQueue("ping_"+id, {durable: false});
+			amqp_ch.sendToQueue("ping_"+id, msg);
 		});
 
 		proxies[id] = irc_clients[id];
