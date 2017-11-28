@@ -66,6 +66,14 @@ function inicializar() {
 			amqp_ch.assertQueue("ping_"+id, {durable: false});
 			amqp_ch.sendToQueue("ping_"+id, msg);
 		});
+		
+		irc_clients[id].addListener('join', function(nick, channel) {
+			
+			if(irc_clients[id].canal) irc_clients[id].leave(irc_clients[id].canal);
+	          irc_clients[id].join(channel);
+			irc_clients[id].canal = channel;		
+			
+		});
 
 
 		proxies[id] = irc_clients[id];
@@ -93,6 +101,7 @@ function inicializar() {
 				break;
                 
 				case '/PRIVMSG':
+					
 					if(comando[1])
 					{
 						if(comando[2])
@@ -108,7 +117,18 @@ function inicializar() {
 						}
 							
 					}
+					
 				break;
+				
+				case '/JOIN':
+					
+					if(comando[1] && comando[1][0]!='#') comando[1] = '#'+comando[1];
+
+					irc_clients[msg.id].emit('join', comando[1]);
+
+				break;
+				
+				
                 
 			}
 
