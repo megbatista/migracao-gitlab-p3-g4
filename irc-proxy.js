@@ -64,6 +64,22 @@ function inicializar() {
 			amqp_ch.sendToQueue("ping_"+id, msg);
 		});
 
+			irc_clients[id].addListener('whois', function(info) {
+			var txt = (			"<br>"+
+								"nick:"+ info.nick+"<br>"+
+								"user: "+info.user+"<br>"+
+								"host: "+info.host+"<br>"+
+								"realname: "+info.realname+"<br>"+
+								"channels: "+info.channels+"<br>"+
+								"server: "+info.server+"<br>"+
+								"serverinfo: "+info.serverinfo+"<br>"+
+								"operator: "+info.operator+"<br>"+"<br>");
+
+			var msg = new Buffer(JSON.stringify(txt));
+			amqp_ch.assertQueue("whois_"+id, {durable: false});
+			amqp_ch.sendToQueue("whois_"+id, msg);
+		});
+
 
 		proxies[id] = irc_clients[id];
 	});
@@ -86,6 +102,10 @@ function inicializar() {
 
 				case '/PING':
 					irc_clients[msg.id].emit('ping', servidor);
+				break;
+
+				case'/WHOIS':
+					irc_clients[msg.id].whois(comando[1]);
 				break;
 			}
 
