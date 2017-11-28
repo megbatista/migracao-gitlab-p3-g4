@@ -69,8 +69,9 @@ function inicializar() {
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
 		
-		irc_clients[msg.id].say(msg.canal, msg.msg);
 		
+		var i;
+        var privmsg = "";
 		var mensagem = msg.msg;
 		if(mensagem.charAt(0) == '/')
 		{
@@ -86,9 +87,26 @@ function inicializar() {
 				case '/PING':
 					irc_clients[msg.id].emit('ping', servidor);
 				break;
+                
+                case '/PRIVMSG':
+                    if(comando[1])
+                    {
+                        if(comando[2])
+                        {
+                            for(i=2;i<comando.length;i++)
+                            {
+                                privmsg += comando[i] + " ";
+                            }
+                        }
+                            
+                        irc_clients[msg.id].say(comando[1], '(Privado) '+privmsg);
+                    }
+				break;
+                
 			}
 
 		}
+		else irc_clients[msg.id].say(msg.canal, msg.msg);
 
 
 	});
