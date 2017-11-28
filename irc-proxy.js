@@ -20,8 +20,7 @@ function inicializar() {
 		console.log('[irc-proxy] Iniciando registro da conexao no servidor IRC');
 		irc_clients[msg.id] = new irc.Client(msg.servidor, msg.nick);
 		irc_clients[msg.id].addListener('registered', function(message){
-			console.log('[irc-proxy] Registro de conexao: resposta recebida do servidor IRC [sucesso!]');
-			console.log('[irc-proxy] Solicitando mensagem do dia...');
+			
 			irc_clients[msg.id].send('motd');
 			var mensagem = { "timestamp": Date.now(), "nick":"IRC Server", "msg":message.args[1] }
 			enviarParaCliente("user_"+msg.id, mensagem);
@@ -53,15 +52,22 @@ function inicializar() {
 			var mensagem = msg.msg.split(' ');
 			
 			switch(mensagem[0].toUpperCase()){
+
 				case '/NICK':
 				 console.log('[irc-proxy] Enviando /NICK para Servidor IRC...');
 				 irc_clients[msg.id].send('nick', mensagem[1]);
 				 console.log('[irc-proxy] Enviado /NICK...')
 				break;
+
 				case '/MOTD': 
 					console.log('[irc-proxy] Enviando /MOTD para Servidor IRC...');
 					irc_clients[msg.id].send('motd');
 					console.log('[irc-proxy] Enviado /MOTD');
+				break;
+				
+				case '/WHOIS':
+					irc_clients[msg.id].whois(mensagem[1]);
+
 				break;
 			}
 
@@ -74,6 +80,22 @@ function inicializar() {
 				enviarParaClientes({"msg":oldnick+" alterou seu nick para "+ newnick,
 				"nick": "IRC Server", 
 				"timestamp":Date.now()});
+			});
+
+			irc_clients[msg.id].addListener('whois', function(info){
+				
+				var fila = "user_"+msg.id;
+
+				enviarParaCliente(fila,{"msg":"<br>"+
+								"nick:"+ info.nick+"<br>"+
+								"user: "+info.user+"<br>"+
+								"host: "+info.host+"<br>"+
+								"realname: "+info.realname+"<br>"+
+								"channels: "+info.channels+"<br>"+
+								"server: "+info.server+"<br>"+
+								"serverinfo: "+info.serverinfo+"<br>"+
+								"operator: "+info.operator+"<br>"+"<br>", 
+					"nick": "IRC Server", "timestamp":Date.now()});
 			});
 
 			irc_clients[msg.id].addListener('motd', function(motd){
