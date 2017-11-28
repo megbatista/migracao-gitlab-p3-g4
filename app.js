@@ -67,18 +67,29 @@ function receberDoServidor (id, callback) {
 // Faz o registro de conexão com o servidor IRC
 app.get('/', function (req, res) {
 	
-	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
+	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) 
+	{
 		
-		id_gen++; // Cria um ID para o usuário
-		id = id_gen;
+		var id;
+		var usuario_novo = false;
+		
+		if(!req.cookies.id)
+		{
+			usuario_novo = true;
+			id_gen++; // Cria um ID para o usuário
+			id = id_gen;
+			res.cookie('id', id); // Seta o ID nos cookies do cliente
+		}
+		else
+		{
+			id = req.cookies.id;
+		}		
 		
 		// Cria um cache de mensagens
 		users[id] = {cache: [{
 			"timestamp": Date.now(), 
-	   "nick": "IRC Server",
-	   "msg": "Bem vindo ao servidor IRC"}]}; 
-	   
-	   res.cookie('id', id); // Seta o ID nos cookies do cliente
+			"nick": "IRC Server",
+			"msg": "Bem vindo ao servidor IRC"}]};  	    
 	   
 	   var target = 'registro_conexao';
 	   var msg = {
@@ -106,8 +117,8 @@ app.get('/', function (req, res) {
 	   
 	   res.sendFile(path.join(__dirname, '/index.html'));
 	}
-	else {
-		
+	else 
+	{		
 		res.sendFile(path.join(__dirname, '/login.html'));
 	}
 });

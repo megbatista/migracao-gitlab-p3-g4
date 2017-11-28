@@ -35,13 +35,13 @@ function inicializar() {
 			{channels: [canal]}
 		);		
 		
-		irc_clients[id].addListener('message'+to, function (from, message) {
+		irc_clients[id].addListener('message'+canal, function (from, message) {
 			
-			console.log(from + ' => '+ to +': ' + message);
+			console.log(from + ' => '+ canal +': ' + message);
 			
 			enviarParaCliente(id, {
 				"timestamp": Date.now(), 
-						   "nick": from,
+				"nick": from,
 				 "msg": message
 			});
 		});

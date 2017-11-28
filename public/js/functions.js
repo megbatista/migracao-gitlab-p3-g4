@@ -1,11 +1,13 @@
 /*
   Adiciona <mensagem> no <elemento_id>. 
 */
-function adiciona_mensagem(mensagem,elemento_id,timestamp) {
+function adiciona_mensagem(mensagem,elemento_id,timestamp) 
+{
 	var novo_elemento = document.createElement('div');
 	novo_elemento.id = "mensagem"+timestamp;
 	document.getElementById(elemento_id).appendChild(novo_elemento);
 	document.getElementById('mensagem'+timestamp).innerHTML=mensagem;
+	console.log("ADICIONA_MENSAGEM: MENSAGEM = "+mensagem);
 }
 
 /*
@@ -27,6 +29,7 @@ function iniciar(elemento_id) {
 			Cookies.get("nick")+"@"+
 			Cookies.get("servidor")+"/"+
 			Cookies.get("canal"));
+	
 	carrega_mensagens(elemento_id,0);
 }
 
@@ -35,32 +38,33 @@ function iniciar(elemento_id) {
   acrescentando-as no <elemento_id>
 */
 var novo_timestamp="0";
-function carrega_mensagens(elemento_id, timestamp) {
+function carrega_mensagens(elemento_id, timestamp) 
+{
+	
 	var mensagem = "";
 	var horario = "";
+	
 	$.get("obter_mensagem/"+timestamp, function(data,status) {
-		if ( status == "success" ) {
+		
+		if ( status == "success" ) 
+		{
+			
 		    var linhas = data;
-		    for ( var i = linhas.length-1; i >= 0; i-- ) {
-		    	horario = timestamp_to_date(linhas[i].timestamp);
-			mensagem = 
-				"["+horario+" - "+
-				linhas[i].nick+"]: "+
-		                linhas[i].msg;
-			novo_timestamp = linhas[i].timestamp;
-		    	adiciona_mensagem(mensagem,elemento_id,novo_timestamp);
+		    for ( var i = linhas.length-1; i >= 0; i-- ) 
+		    {
+				horario = timestamp_to_date(linhas[i].timestamp);
+				mensagem = "["+horario+" - "+linhas[i].nick+"]: "+linhas[i].msg;
+				novo_timestamp = linhas[i].timestamp;
+				adiciona_mensagem(mensagem,elemento_id,novo_timestamp);
+				console.log(">>>Mensagem: "+mensagem+" ID:"+elemento_id);
 			}
 		}
-		else {
+		else 
+		{
 		    alert("erro: "+status);
 		}
-		}
-	);
-	t = setTimeout( 
-		function() { 
-			carrega_mensagens(elemento_id,novo_timestamp) 
-		}, 
-		1000);		
+		
+	});t = setTimeout(function(){carrega_mensagens(elemento_id,novo_timestamp)},1000);		
 }
 
 /*
@@ -87,7 +91,7 @@ function submete_mensagem(elem_id_mensagem) {
 		},
 		contentType: "application/json",
 		dataType: "json"
-		});
+	});
 }
 
 function trocarMode(elemento){
