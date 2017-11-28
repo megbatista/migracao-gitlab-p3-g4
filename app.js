@@ -93,8 +93,8 @@ app.get('/', function (req, res) {
 		// Cria um cache de mensagens
 		users[id] = {cache: [{
 			"timestamp": Date.now(), 
-	   "nick": "IRC Server",
-	   "msg": "Bem vindo ao servidor IRC"}]}; 
+            "nick": "IRC Server",
+            "msg": "Bem vindo ao servidor IRC"}]}; 
 	   
 	   res.cookie('id', id); // Seta o ID nos cookies do cliente
 	   

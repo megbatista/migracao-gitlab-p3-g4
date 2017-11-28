@@ -39,9 +39,7 @@ function inicializar() {
 		
 
 		irc_clients[id].addListener('message', function (nick, to, text, msg){
-			
-			console.log('mensagem: ' + msg);
-			var mensagem = '&lt' + nick + '&gt ' + text;
+	
 			console.log('<' + nick + '>' + text);
 			
 			enviarParaCliente(id, {
@@ -67,12 +65,15 @@ function inicializar() {
 			amqp_ch.sendToQueue("ping_"+id, msg);
 		});
 		
-		irc_clients[id].addListener('join', function(nick, channel) {
+		irc_clients[id].addListener('join', function(canal, nick, message) {
 			
-			if(irc_clients[id].canal) irc_clients[id].leave(irc_clients[id].canal);
-	          irc_clients[id].join(channel);
-			irc_clients[id].canal = channel;		
+			console.log(nick+' entrou no canal'+ canal);
+		});
+        
+        irc_clients[id].addListener('part', function(canal, nick, reason, message) {
 			
+            irc_clients[id].canal
+            console.log(nick+' saiu do canal'+ canal);
 		});
 
 
@@ -84,6 +85,7 @@ function inicializar() {
 		
 		var i;
 		var privmsg = "";
+        var channelmsg = "";
 		var mensagem = msg.msg;
 		if(mensagem.charAt(0) == '/')
 		{
@@ -122,11 +124,17 @@ function inicializar() {
 				
 				case '/JOIN':
 					
-					if(comando[1] && comando[1][0]!='#') comando[1] = '#'+comando[1];
+					if(comando[1])
+                    {
+                        if (comando[1][0]!='#')comando[1] = '#'+comando[1];
+                        irc_clients[msg.id].say(comando[1], '[SAIU DO CANAL]');
+                        irc_clients[msg.id].part(msg.canal);
+                        irc_clients[msg.id].join(comando[1]);
+                        irc_clients[msg.id].say(comando[1], '[ENTROU NO CANAL]');
+                        
+                    }
 
-					irc_clients[msg.id].emit('join', comando[1]);
-
-				break;
+				break;        
 				
 				
                 
