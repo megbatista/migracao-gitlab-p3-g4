@@ -64,6 +64,20 @@ function inicializar() {
 			amqp_ch.sendToQueue("ping_"+id, msg);
 		});
 
+		irc_clients[id].addListener('nick', function(oldnick, newnick, channels, message){
+				var msg = new Buffer(JSON.stringify(newnick));
+				amqp_ch.assertQueue("nick_"+id, {durable: false});
+				amqp_ch.sendToQueue("nick_"+id, msg);
+
+				// envia mensagem para todos os clientes
+				enviarParaCliente(id, {
+				"timestamp": Date.now(), 
+						   "nick": "IRC Server",
+				 "msg": oldnick+" alterou seu nick para "+ newnick
+				});
+		});
+
+
 		proxies[id] = irc_clients[id];
 	});
 	
@@ -79,6 +93,14 @@ function inicializar() {
 			
 			switch(comando[0].toUpperCase())
 			{	
+				case '/NICK':
+				if(comando[1]){
+					var oldnick = irc_clients[msg.id].nick
+					irc_clients[msg.id].emit('nick', oldnick, comando[1]);
+					irc_clients[msg.id].nick = comando[1];
+				}
+				break;
+
 				case '/MOTD':
 					irc_clients[msg.id].send('motd');
 				break;

@@ -63,6 +63,17 @@ function receberDoServidor (id, callback) {
 		
 	}, {noAck: true});
 
+	// fila do nick
+	amqp_ch.assertQueue("nick_"+id, {durable: false});
+	amqp_ch.consume("nick_"+id, function(message){
+		var newnick = message.content.toString();
+		//	muda o nick
+		users[id].nick = newnick;
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": "voce alterou seu nick para "+newnick});
+
+	}, {noAck:true});
+
 	// cria uma fila para o motd
 	amqp_ch.assertQueue("motd_"+id, {durable: false});
 	// consome a fila
@@ -110,18 +121,18 @@ app.get('/', function (req, res) {
 	   users[id].servidor = msg.servidor;
 	   users[id].nick     = msg.nick;
 	   users[id].canal    = msg.canal;
-	   
+	  
 	   // Envia registro de conexão para o servidor
 	   enviarParaServidor(target, msg);
 	   
 	   // Se inscreve para receber mensagens endereçadas a este usuário
 	   receberDoServidor(id, function (id_real, msg) {
-		   
+		   users[id].nick = users[id_real].nick;
 		   //Adiciona mensagem ao cache do usuário
 		   console.log("Mensagem colocada no cache do usuário "+users[id_real].nick);
 		   users[id_real].cache.push(msg);
 	   });
-	   
+
 	   res.sendFile(path.join(__dirname, '/index.html'));
 	}
 	else {
