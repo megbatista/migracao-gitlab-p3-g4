@@ -37,14 +37,17 @@ function inicializar() {
 			{channels: [canal]}
 		);		
 		
-		irc_clients[id].addListener('message'+canal, function (from, message) {
+
+		irc_clients[id].addListener('message', function (nick, to, text, msg){
 			
-			console.log(from + ' => '+ canal +': ' + message);
+			console.log('mensagem: ' + msg);
+			var mensagem = '&lt' + nick + '&gt ' + text;
+			console.log('<' + nick + '>' + text);
 			
 			enviarParaCliente(id, {
-				"timestamp": Date.now(), 
-						   "nick": from,
-				 "msg": message
+				 "timestamp": Date.now(), 
+				 "nick": nick,
+				 "msg": text
 			});
 		});
 		
@@ -72,7 +75,7 @@ function inicializar() {
 		
 		
 		var i;
-        var privmsg = "";
+		var privmsg = "";
 		var mensagem = msg.msg;
 		if(mensagem.charAt(0) == '/')
 		{
@@ -89,19 +92,22 @@ function inicializar() {
 					irc_clients[msg.id].emit('ping', servidor);
 				break;
                 
-                case '/PRIVMSG':
-                    if(comando[1])
-                    {
-                        if(comando[2])
-                        {
-                            for(i=2;i<comando.length;i++)
-                            {
-                                privmsg += comando[i] + " ";
-                            }
-                        }
-                            
-                        irc_clients[msg.id].say(comando[1], '(Privado) '+privmsg);
-                    }
+				case '/PRIVMSG':
+					if(comando[1])
+					{
+						if(comando[2])
+						{
+							for(i=2;i<comando.length;i++)
+							{
+								privmsg += comando[i] + " ";
+							}
+							
+							irc_clients[msg.id].say(comando[1], '(Privado) '+privmsg);
+							
+							console.log("[irc] Privmsg from "+msg.nick+" to "+comando[1]);
+						}
+							
+					}
 				break;
                 
 			}
