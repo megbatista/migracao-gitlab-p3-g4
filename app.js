@@ -79,7 +79,13 @@ function receberDoServidor (id, callback) {
 		users[id].cache.push({"timestamp": Date.now(), 
 	   "nick": "IRC Server", "msg": "pong: " + msg});
 	}, {noAck:true});
-	
+
+	amqp_ch.assertQueue("whois_"+id, {durable: false});
+	amqp_ch.consume("whois_"+id, function(message){
+		var msg = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": "->: " + msg});
+	}, {noAck:true});
 }
 
 // Faz o registro de conexão com o servidor IRC
