@@ -37,14 +37,15 @@ function inicializar() {
 			{channels: [canal]}
 		);		
 		
-		irc_clients[id].addListener('message'+canal, function (from, message) {
-			
-			console.log(from + ' => '+ canal +': ' + message);
+
+		irc_clients[id].addListener('message', function (nick, to, text, msg){
+	
+			console.log('<' + nick + '>' + text);
 			
 			enviarParaCliente(id, {
-				"timestamp": Date.now(), 
-						   "nick": from,
-				 "msg": message
+				 "timestamp": Date.now(), 
+				 "nick": nick,
+				 "msg": text
 			});
 		});
 		
@@ -62,6 +63,28 @@ function inicializar() {
 			var msg = new Buffer(JSON.stringify(pong));
 			amqp_ch.assertQueue("ping_"+id, {durable: false});
 			amqp_ch.sendToQueue("ping_"+id, msg);
+		});
+		
+		irc_clients[id].addListener('join', function(canal, nick, message) {
+
+            enviarParaCliente(id, {
+                "timestamp": Date.now(),
+                "nick": nick,
+				"canal":canal,
+                "msg": " "
+            });
+			console.log(nick+' entrou no canal'+ canal);
+		});
+        
+        irc_clients[id].addListener('part', function(canal, nick, reason, message) {
+
+            enviarParaCliente(id, {
+                "timestamp": Date.now(),
+                "nick": nick,
+                "canal": "",
+                "msg": " "
+            });
+            console.log(nick+' saiu do canal'+ canal);
 		});
 
 			irc_clients[id].addListener('whois', function(info) {
@@ -86,8 +109,9 @@ function inicializar() {
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
 		
-		irc_clients[msg.id].say(msg.canal, msg.msg);
-		
+		var i;
+		var privmsg = "";
+        var channelmsg = "";
 		var mensagem = msg.msg;
 		if(mensagem.charAt(0) == '/')
 		{
@@ -103,14 +127,60 @@ function inicializar() {
 				case '/PING':
 					irc_clients[msg.id].emit('ping', servidor);
 				break;
+                
+				case '/PRIVMSG':
+					
+					if(comando[1])
+					{
+						if(comando[2])
+						{
+							for(i=2;i<comando.length;i++)
+							{
+								privmsg += comando[i] + " ";
+							}
+							
+							irc_clients[msg.id].say(comando[1], '(Privado) '+privmsg);
+
+						}
+							
+					}
+					
+				break;
+				
+				case '/JOIN':
+					
+					if(comando[1])
+                    {
+                        if (comando[1][0]!='#')comando[1] = '#'+comando[1];
+                        irc_clients[msg.id].say(comando[1], '[SAIU DO CANAL]');
+                        irc_clients[msg.id].part(comando[1]);
+                        irc_clients[msg.id].join(comando[1]);
+                        irc_clients[msg.id].say(comando[1], '[ENTROU NO CANAL]');
+                        
+                    }
+
+				break;
+
+                case '/PART':
+
+                    if(comando[1])
+                    {
+                        if (comando[1][0]!='#')comando[1] = '#'+comando[1];
+                        irc_clients[msg.id].say(comando[1], '[SAIU DO CANAL]');
+                        irc_clients[msg.id].part(comando[1]);
+
+                    }
+
+                break;
 
 				case'/WHOIS':
 					irc_clients[msg.id].whois(comando[1]);
-				break;
+			    	break;
 			}
 
-		}
 
+		}
+		else irc_clients[msg.id].say(msg.canal, msg.msg);
 
 	});
 
