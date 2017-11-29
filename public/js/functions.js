@@ -1,12 +1,3 @@
-/*
-  Adiciona <mensagem> no <elemento_id>. 
-*/
-function adiciona_mensagem(mensagem,elemento_id,timestamp) {
-	var novo_elemento = document.createElement('div');
-	novo_elemento.id = "mensagem"+timestamp;
-	document.getElementById(elemento_id).appendChild(novo_elemento);
-	document.getElementById('mensagem'+timestamp).innerHTML=mensagem;
-}
 
 /*
   Transforma timestamp em formato HH:MM:SS
@@ -38,29 +29,52 @@ var novo_timestamp="0";
 function carrega_mensagens(elemento_id, timestamp) {
 	var mensagem = "";
 	var horario = "";
+
 	$.get("obter_mensagem/"+timestamp, function(data,status) {
 		if ( status == "success" ) {
-		    var linhas = data;
+		    console.log('[functions] Recebendo cache: '+ JSON.stringify(data));
+			var linhas;
+			if(data.length > 2 && (data[1].msg == data[2].msg)){
+				var array = [];
+				array.push(data[0]);
+				array.push(data[1]);
+				linhas = array;
+			}else{
+				linhas = data;
+			}
 		    for ( var i = linhas.length-1; i >= 0; i-- ) {
 		    	horario = timestamp_to_date(linhas[i].timestamp);
-			mensagem = 
-				"["+horario+" - "+
-				linhas[i].nick+"]: "+
-		                linhas[i].msg;
-			novo_timestamp = linhas[i].timestamp;
+				mensagem = "[" + horario+" - " + linhas[i].nick+"]: " + linhas[i].msg;
+				novo_timestamp = linhas[i].timestamp;
 		    	adiciona_mensagem(mensagem,elemento_id,novo_timestamp);
 			}
+				console.log('[functions] Mensagem a ser exibida no mural: '+ mensagem);
+
+				$("#status").text("Conectado - irc://"+
+				Cookies.get("nick")+"@"+
+				Cookies.get("servidor")+"/"+
+				Cookies.get("canal"));
 		}
 		else {
 		    alert("erro: "+status);
 		}
-		}
-	);
+	});
 	t = setTimeout( 
 		function() { 
 			carrega_mensagens(elemento_id,novo_timestamp) 
 		}, 
 		1000);		
+}
+
+/*
+  Adiciona <mensagem> no <elemento_id>. 
+*/
+function adiciona_mensagem(mensagem,elemento_id,timestamp) {
+	console.log('[functions] Adicionando mensagens no mural: '+mensagem);
+	var novo_elemento = document.createElement('div');
+	novo_elemento.id = "mensagem"+timestamp;
+	document.getElementById(elemento_id).appendChild(novo_elemento);
+	document.getElementById('mensagem'+timestamp).innerHTML=mensagem;
 }
 
 /*
