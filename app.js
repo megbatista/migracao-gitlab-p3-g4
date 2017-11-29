@@ -33,6 +33,57 @@ app.post('/login', function (req, res) {
 	res.redirect('/');
 });
 
+<<<<<<< app.js
+=======
+function enviarParaServidor (comando, msg) {
+	
+	msg = new Buffer(JSON.stringify(msg));
+	
+	amqp_ch.assertQueue(comando, {durable: false});
+	amqp_ch.sendToQueue(comando, msg);
+	console.log(" [app] Sent %s", msg);
+	
+}
+
+function receberDoServidor (id, callback) {
+	
+	amqp_ch.assertQueue("user_"+id, {durable: false});
+	
+	console.log(" [app] Waiting for messages for "+ id);
+	
+	amqp_ch.consume("user_"+id, function(msg) {
+		
+		console.log(" [app] ID "+id+" Received "+msg.content.toString());
+		callback(id, JSON.parse(msg.content.toString()));
+		
+	}, {noAck: true});
+
+	// cria uma fila para o motd
+	amqp_ch.assertQueue("motd_"+id, {durable: false});
+	// consome a fila
+	amqp_ch.consume("motd_"+id, function(message){
+		motd = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": '<pre>'+motd+'</pre>'});
+	}, {noAck:true});
+
+	// fila do ping
+	amqp_ch.assertQueue("ping_"+id, {durable: false});
+	amqp_ch.consume("ping_"+id, function(message){
+		var msg = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": "pong: " + msg});
+	}, {noAck:true});
+
+	amqp_ch.assertQueue("whois_"+id, {durable: false});
+	amqp_ch.consume("whois_"+id, function(message){
+		var msg = message.content.toString();
+		users[id].cache.push({"timestamp": Date.now(), 
+	   "nick": "IRC Server", "msg": "->: " + msg});
+	}, {noAck:true});
+}
+
+>>>>>>> app.js
 // Faz o registro de conexão com o servidor IRC
 app.get('/', function (req, res) {
 	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
@@ -67,10 +118,13 @@ app.get('/', function (req, res) {
 
 	   // Se inscreve para receber mensagens endereçadas a este usuário
 	   receberDoServidor(id, function (id_real, msg) {
+
 		   console.log("[app] Armazenando mensagem do servidor no buffer do %s [user_%d]: %s", users[id_real].nick, users[id_real].id, JSON.stringify(msg));
 		   if(msg.nick != "IRC Server"){
 		  	 users[id_real].nick = msg.nick;
 		   }
+		   if(msg.canal)users[id_real].canal = msg.canal;
+
 		   users[id_real].cache.push(msg);
 	   });
 	   res.sendFile(path.join(__dirname, '/index.html'));
@@ -93,7 +147,9 @@ app.get('/obter_mensagem/:timestamp', function (req, res) {
 
 // Envia uma mensagem para o servidor IRC
 app.post('/gravar_mensagem', function (req, res) {
+
 	console.log('[app] Armazenando mensagem digitada no buffer do %s [user_%d]: %s', req.cookies.nick, req.cookies.id, JSON.stringify(req.body));
+
 	users[req.cookies.id].cache.push(req.body);
 	enviarParaServidor("gravar_mensagem", {
 		"id": req.cookies.id,
@@ -101,6 +157,7 @@ app.post('/gravar_mensagem', function (req, res) {
 		"canal": users[req.cookies.id].canal, 
 		"msg": req.body.msg
 	});
+
 	res.end();
 });
 
