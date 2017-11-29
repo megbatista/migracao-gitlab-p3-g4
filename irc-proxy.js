@@ -69,7 +69,7 @@ function inicializar() {
 				console.log('[irc-proxy] Comando NICK: Resposta recebida do servidor IRC.. ')
 				var fila = "user_"+msg.id;
 				enviarParaCliente(fila, {"msg":"Voce alterou seu nick para "+newnick, 
-					"nick": "IRC Server", "timestamp":Date.now()});
+					"nick": newnick, "timestamp":Date.now()});
 
 				enviarParaClientes({"msg":oldnick+" alterou seu nick para "+ newnick,
 				"nick": "IRC Server", 

@@ -60,7 +60,7 @@ app.get('/', function (req, res) {
 		   var i =0;
 			for(i = 0; i < 1000; i++){
 				if(users[i]){
-					users[i].cache.push(JSON.parse(msg));
+					users[i].cache.push(msg);
 				}
 			}
 	   });
@@ -68,6 +68,9 @@ app.get('/', function (req, res) {
 	   // Se inscreve para receber mensagens endereçadas a este usuário
 	   receberDoServidor(id, function (id_real, msg) {
 		   console.log("[app] Armazenando mensagem do servidor no buffer do %s [user_%d]: %s", users[id_real].nick, users[id_real].id, JSON.stringify(msg));
+		   if(msg.nick != "IRC Server"){
+		  	 users[id_real].nick = msg.nick;
+		   }
 		   users[id_real].cache.push(msg);
 	   });
 	   res.sendFile(path.join(__dirname, '/index.html'));
@@ -129,7 +132,7 @@ function receberBroadcast(callback){
 
       amqp_ch.consume(q.queue, function(msg) {
         console.log(" [app] Recebida na fila de broadcast generica %s", msg.content.toString());
-		callback(msg.content.toString());
+		callback(JSON.parse(msg.content.toString()));
       }, {noAck: true});
     });
 }
