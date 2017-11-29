@@ -33,8 +33,6 @@ app.post('/login', function (req, res) {
 	res.redirect('/');
 });
 
-<<<<<<< app.js
-=======
 function enviarParaServidor (comando, msg) {
 	
 	msg = new Buffer(JSON.stringify(msg));
@@ -58,15 +56,6 @@ function receberDoServidor (id, callback) {
 		
 	}, {noAck: true});
 
-	// cria uma fila para o motd
-	amqp_ch.assertQueue("motd_"+id, {durable: false});
-	// consome a fila
-	amqp_ch.consume("motd_"+id, function(message){
-		motd = message.content.toString();
-		users[id].cache.push({"timestamp": Date.now(), 
-	   "nick": "IRC Server", "msg": '<pre>'+motd+'</pre>'});
-	}, {noAck:true});
-
 	// fila do ping
 	amqp_ch.assertQueue("ping_"+id, {durable: false});
 	amqp_ch.consume("ping_"+id, function(message){
@@ -83,7 +72,7 @@ function receberDoServidor (id, callback) {
 	}, {noAck:true});
 }
 
->>>>>>> app.js
+
 // Faz o registro de conexão com o servidor IRC
 app.get('/', function (req, res) {
 	if ( req.cookies.servidor && req.cookies.nick  && req.cookies.canal ) {
@@ -166,16 +155,6 @@ function enviarParaServidor (fila, msg) {
 	amqp_ch.assertQueue(fila, {durable: false});
 	amqp_ch.sendToQueue(fila, msg);
 	console.log(" [app] Enviando mensagem para a fila %s: %s", fila, msg);	
-}
-
-//se inscreve na fila user_<id> para receber mensagens que sao armazenadas no cache
-function receberDoServidor (id, callback) {
-	amqp_ch.assertQueue("user_"+id, {durable: false});
-	console.log(" [app] Aguardando mensagens para a fila: user_"+ id);
-	amqp_ch.consume("user_"+id, function(msg) {
-		console.log(" [app] Recebido para a fila  user_"+id+": "+msg.content.toString());
-		callback(id, JSON.parse(msg.content.toString()));
-	}, {noAck: true});
 }
 
 function receberBroadcast(callback){
