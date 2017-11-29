@@ -119,6 +119,8 @@ app.get('/', function (req, res) {
 		   
 		   //Adiciona mensagem ao cache do usuário
 		   console.log("Mensagem colocada no cache do usuário "+users[id_real].nick);
+		   if(msg.nick)users[id_real].nick = msg.nick;
+		   if(msg.canal)users[id_real].canal = msg.canal;
 		   users[id_real].cache.push(msg);
 	   });
 	   

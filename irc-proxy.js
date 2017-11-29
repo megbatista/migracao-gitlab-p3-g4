@@ -66,13 +66,24 @@ function inicializar() {
 		});
 		
 		irc_clients[id].addListener('join', function(canal, nick, message) {
-			
+
+            enviarParaCliente(id, {
+                "timestamp": Date.now(),
+                "nick": nick,
+				"canal":canal,
+                "msg": " "
+            });
 			console.log(nick+' entrou no canal'+ canal);
 		});
         
         irc_clients[id].addListener('part', function(canal, nick, reason, message) {
-			
-            irc_clients[id].canal
+
+            enviarParaCliente(id, {
+                "timestamp": Date.now(),
+                "nick": nick,
+                "canal": "",
+                "msg": " "
+            });
             console.log(nick+' saiu do canal'+ canal);
 		});
 
@@ -81,7 +92,6 @@ function inicializar() {
 	});
 	
 	receberDoCliente("gravar_mensagem", function (msg) {
-		
 		
 		var i;
 		var privmsg = "";
@@ -114,8 +124,7 @@ function inicializar() {
 							}
 							
 							irc_clients[msg.id].say(comando[1], '(Privado) '+privmsg);
-							
-							console.log("[irc] Privmsg from "+msg.nick+" to "+comando[1]);
+
 						}
 							
 					}
@@ -128,17 +137,28 @@ function inicializar() {
                     {
                         if (comando[1][0]!='#')comando[1] = '#'+comando[1];
                         irc_clients[msg.id].say(comando[1], '[SAIU DO CANAL]');
-                        irc_clients[msg.id].part(msg.canal);
+                        irc_clients[msg.id].part(comando[1]);
                         irc_clients[msg.id].join(comando[1]);
                         irc_clients[msg.id].say(comando[1], '[ENTROU NO CANAL]');
                         
                     }
 
-				break;        
-				
-				
-                
-			}
+				break;
+
+                case '/PART':
+
+                    if(comando[1])
+                    {
+                        if (comando[1][0]!='#')comando[1] = '#'+comando[1];
+                        irc_clients[msg.id].say(comando[1], '[SAIU DO CANAL]');
+                        irc_clients[msg.id].part(comando[1]);
+
+                    }
+
+                break;
+
+
+            }
 
 		}
 		else irc_clients[msg.id].say(msg.canal, msg.msg);
